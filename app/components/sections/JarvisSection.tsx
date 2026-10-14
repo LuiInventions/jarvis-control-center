@@ -1,13 +1,27 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { Bot, Trash2 } from "lucide-react";
 import Markdown from "../Markdown";
-import { Badge, Button, Textarea } from "../ui";
+import { Button, Input, Textarea } from "../ui";
 
 interface ToolNote {
   name: string;
   ok: boolean;
+}
+
+interface Activity {
+  kind: "thinking" | "reasoning" | "tool";
+  text?: string;
+  name?: string;
+  ok?: boolean;
+}
+
+interface TraceLine {
+  at: string;
+  dir: "call" | "result";
+  name: string;
+  body: string;
+  ok?: boolean;
 }
 
 interface ChatMessage {
@@ -16,7 +30,28 @@ interface ChatMessage {
   text: string;
   createdAt: string;
   tools?: ToolNote[];
+  activity?: Activity[];
+  trace?: TraceLine[];
 }
+
+interface LiveTurn {
+  thinking: boolean;
+  reasoning: string;
+  text: string;
+  tools: { name: string; ok?: boolean; done: boolean }[];
+  trace: TraceLine[];
+}
+
+type StreamEvent =
+  | { type: "thinking" }
+  | { type: "reasoning"; text: string }
+  | { type: "text"; text: string }
+  | { type: "tool-start"; name: string; arguments: string }
+  | { type: "tool-end"; name: string; arguments: string; output: string; ok: boolean }
+  | { type: "done"; messages?: ChatMessage[] }
+  | { type: "error"; error?: string; messages?: ChatMessage[] };
+
+const emptyLive = (): LiveTurn => ({ thinking: false, reasoning: "", text: "", tools: [], trace: [] });
 
 export default function JarvisSection() {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
@@ -26,7 +61,12 @@ export default function JarvisSection() {
   const [modelLabel, setModelLabel] = useState("GPT 6 Luna");
   const [error, setError] = useState("");
   const [loaded, setLoaded] = useState(false);
+  const [keyOpen, setKeyOpen] = useState(false);
+  const [apiKey, setApiKey] = useState("");
+  const [keyBusy, setKeyBusy] = useState(false);
+  const [live, setLive] = useState<LiveTurn | null>(null);
   const endRef = useRef<HTMLDivElement>(null);
+  const logRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     let stop = false;
@@ -52,7 +92,12 @@ export default function JarvisSection() {
 
   useEffect(() => {
     endRef.current?.scrollIntoView({ block: "end" });
-  }, [messages, pending]);
+  }, [messages, live, pending]);
+
+  useEffect(() => {
+    const node = logRef.current;
+    if (node) node.scrollTop = node.scrollHeight;
+  }, [messages, live]);
 
   async function send() {
     const sent = text.trim();
@@ -60,6 +105,7 @@ export default function JarvisSection() {
     setText("");
     setError("");
     setPending(true);
+    setLive(emptyLive());
     setMessages((prev) => [
       ...prev,
       { id: `local_${Date.now()}`, role: "user", text: sent, createdAt: new Date().toISOString() },
@@ -70,13 +116,34 @@ export default function JarvisSection() {
         headers: { "content-type": "application/json" },
         body: JSON.stringify({ text: sent }),
       });
-      const data = (await res.json()) as { messages?: ChatMessage[]; error?: string };
-      if (data.messages) setMessages(data.messages);
-      if (!res.ok) setError(data.error || "Jarvis konnte nicht antworten.");
+      const kind = res.headers.get("content-type") || "";
+      if (kind.includes("application/json")) {
+        const data = (await res.json()) as { messages?: ChatMessage[]; error?: string };
+        if (data.messages) setMessages(data.messages);
+        if (!res.ok) setError(data.error || "Jarvis konnte nicht antworten.");
+        return;
+      }
+      await readEvents(res, (event) => {
+        if (event.type === "done") {
+          setLive(null);
+          if (event.messages) setMessages(event.messages);
+          return;
+        }
+        if (event.type === "error") {
+          setLive(null);
+          if (event.messages) setMessages(event.messages);
+          setError(event.error || "Jarvis konnte nicht antworten.");
+          return;
+        }
+        setLive((prev) => applyLive(prev ?? emptyLive(), event));
+      });
     } catch {
       setError("Jarvis ist nicht erreichbar.");
       setText(sent);
+      const again = await fetch("/api/jarvis").then((item) => item.json()).catch(() => null);
+      if (again?.messages) setMessages(again.messages as ChatMessage[]);
     } finally {
+      setLive(null);
       setPending(false);
     }
   }
@@ -89,105 +156,302 @@ export default function JarvisSection() {
     setMessages(data.messages ?? []);
   }
 
+  async function saveKey() {
+    const next = apiKey.trim();
+    if (!next || keyBusy) return;
+    setKeyBusy(true);
+    setError("");
+    try {
+      const res = await fetch("/api/jarvis/key", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ apiKey: next }),
+      });
+      const data = (await res.json()) as { hasKey?: boolean; error?: string };
+      if (!res.ok) throw new Error(data.error || "Der Key konnte nicht gespeichert werden.");
+      setHasKey(Boolean(data.hasKey));
+      setApiKey("");
+      setKeyOpen(false);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Der Key konnte nicht gespeichert werden.");
+    } finally {
+      setKeyBusy(false);
+    }
+  }
+
+  const log = consoleLines(messages, live);
+  const showKey = !hasKey || keyOpen;
+
   return (
-    <div className="flex min-h-0 flex-1 flex-col">
-      <header className="flex items-center gap-3 border-b border-line px-5 py-3">
-        <div className="mr-auto min-w-0">
-          <h2 className="text-sm font-semibold text-ink">Jarvis</h2>
-          <p className="text-[11px] text-faint">Steuert die App über den lokalen MCP-Server</p>
-        </div>
-        <Badge tone="accent">{modelLabel}</Badge>
-        <Button
-          type="button"
-          variant="ghost"
-          size="sm"
-          icon={Trash2}
-          onClick={() => void clearHistory()}
-          disabled={pending || messages.length === 0}
-        >
-          Verlauf löschen
-        </Button>
-      </header>
-
-      {!hasKey && (
-        <p className="border-b border-warn/30 bg-warn/10 px-5 py-2 text-[13px] text-warn">
-          Kein OpenAI-API-Key. Trage ihn in den Einstellungen bei OpenAI ein. Jarvis nutzt {modelLabel}.
-        </p>
-      )}
-      {error && (
-        <p className="border-b border-danger/30 bg-danger/10 px-5 py-2 text-[13px] text-danger">{error}</p>
-      )}
-
-      <div className="min-h-0 flex-1 space-y-3 overflow-auto px-5 py-4" role="log" aria-live="polite">
-        {loaded && messages.length === 0 && !pending && (
-          <div className="grid h-full place-items-center text-center">
-            <div className="max-w-sm">
-              <Bot className="mx-auto mb-3 size-8 text-accent" />
-              <p className="text-sm font-medium text-ink">Frag Jarvis</p>
-              <p className="mt-1 text-[13px] text-muted">
-                Zum Beispiel: Zeig die laufenden GitHub-Sessions und lies den Verlauf von Session 1.
-              </p>
-            </div>
+    <div className="flex min-h-0 flex-1">
+      <section className="flex min-w-0 flex-1 flex-col">
+        <header className="flex items-center gap-4 border-b border-line px-6 py-3">
+          <div className="mr-auto min-w-0">
+            <h2 className="text-[15px] font-medium tracking-tight text-ink">Jarvis</h2>
+            <p className="text-[11px] text-faint">{modelLabel} · kurzes Nachdenken</p>
           </div>
-        )}
-        {messages.map((entry) => (
-          <article
-            key={entry.id}
-            className={
-              entry.role === "user"
-                ? "ml-auto max-w-[75%] rounded-lg bg-[color-mix(in_oklab,var(--accent)_16%,transparent)] px-3 py-2"
-                : "mr-auto max-w-[75%] rounded-lg border border-line bg-raised px-3 py-2"
-            }
+          <Button type="button" variant="ghost" size="sm" onClick={() => setKeyOpen((open) => !open)}>
+            API-Key
+          </Button>
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            onClick={() => void clearHistory()}
+            disabled={pending || messages.length === 0}
           >
-            <p className="mb-1 text-[11px] text-faint">{entry.role === "user" ? "Du" : "Jarvis"}</p>
-            {entry.role === "assistant" ? (
-              <Markdown>{entry.text}</Markdown>
-            ) : (
-              <p className="whitespace-pre-wrap text-sm text-ink">{entry.text}</p>
-            )}
-            {entry.tools && entry.tools.length > 0 && (
-              <div className="mt-2 flex flex-wrap gap-1.5">
-                {entry.tools.map((tool, index) => (
-                  <span
-                    key={`${entry.id}_${tool.name}_${index}`}
-                    className="rounded-full border border-line px-2 py-0.5 font-mono text-[10px] text-muted"
-                  >
-                    {tool.ok ? tool.name : `${tool.name} fehlgeschlagen`}
-                  </span>
-                ))}
-              </div>
-            )}
-          </article>
-        ))}
-        {pending && <p className="text-[13px] text-muted">Jarvis arbeitet…</p>}
-        <div ref={endRef} />
-      </div>
+            Verlauf löschen
+          </Button>
+        </header>
 
-      <form
-        className="flex items-end gap-2 border-t border-line px-5 py-3"
-        onSubmit={(event) => {
-          event.preventDefault();
-          void send();
-        }}
-      >
-        <Textarea
-          rows={2}
-          value={text}
-          placeholder={hasKey ? "Nachricht an Jarvis" : "Zuerst den OpenAI-Key in den Einstellungen setzen"}
-          disabled={pending || !hasKey}
-          className="min-h-0 resize-none"
-          onChange={(event) => setText(event.target.value)}
-          onKeyDown={(event) => {
-            if (event.key === "Enter" && !event.shiftKey) {
+        {error && (
+          <p className="border-b border-danger/30 px-6 py-2 text-[13px] text-danger">{error}</p>
+        )}
+
+        {showKey && (
+          <form
+            className="border-b border-line px-6 py-4"
+            onSubmit={(event) => {
               event.preventDefault();
-              void send();
-            }
+              void saveKey();
+            }}
+          >
+            <p className="text-sm text-ink">OpenAI-API-Key</p>
+            <p className="mt-1 text-[12px] text-faint">Nur dieser Tab benutzt ihn. Er bleibt auf diesem PC.</p>
+            <div className="mt-3 flex max-w-xl items-center gap-2">
+              <Input
+                type="password"
+                autoComplete="off"
+                value={apiKey}
+                placeholder={hasKey ? "Neuen Key eingeben" : "sk-…"}
+                onChange={(event) => setApiKey(event.target.value)}
+                className="font-mono text-[13px]"
+              />
+              <Button type="submit" variant="primary" loading={keyBusy} disabled={!apiKey.trim()}>
+                Speichern
+              </Button>
+              {hasKey && (
+                <Button type="button" variant="ghost" onClick={() => setKeyOpen(false)}>
+                  Abbrechen
+                </Button>
+              )}
+            </div>
+          </form>
+        )}
+
+        <div className="min-h-0 flex-1 overflow-auto px-6 py-6" role="log" aria-live="polite">
+          {loaded && messages.length === 0 && !pending && hasKey && (
+            <p className="max-w-md text-sm leading-relaxed text-muted">
+              Schreib, was die App tun soll. Jarvis liest Sessions, Dateien und Repos über den lokalen MCP-Server.
+            </p>
+          )}
+          <div className="mx-auto flex max-w-2xl flex-col gap-6">
+            {messages.map((entry) => (
+              <article key={entry.id} className={entry.role === "user" ? "ml-auto max-w-[80%]" : "max-w-full"}>
+                {entry.role === "user" ? (
+                  <p className="whitespace-pre-wrap text-right text-sm leading-relaxed text-ink">{entry.text}</p>
+                ) : (
+                  <div className="border-l border-line pl-4">
+                    <ActivityList activity={entry.activity} />
+                    {entry.text && <Markdown>{entry.text}</Markdown>}
+                  </div>
+                )}
+              </article>
+            ))}
+            {live && (
+              <article className="border-l border-line pl-4">
+                <ActivityList
+                  activity={liveActivity(live)}
+                  thinking={live.thinking}
+                />
+                {live.text && <Markdown>{live.text}</Markdown>}
+              </article>
+            )}
+          </div>
+          <div ref={endRef} />
+        </div>
+
+        <form
+          className="border-t border-line px-6 py-3"
+          onSubmit={(event) => {
+            event.preventDefault();
+            void send();
           }}
-        />
-        <Button type="submit" variant="primary" loading={pending} disabled={!text.trim() || !hasKey}>
-          Senden
-        </Button>
-      </form>
+        >
+          <div className="mx-auto flex max-w-2xl items-end gap-2">
+            <Textarea
+              rows={1}
+              value={text}
+              placeholder={hasKey ? "Nachricht" : "Zuerst den OpenAI-Key eintragen"}
+              disabled={pending || !hasKey}
+              className="min-h-9 resize-none"
+              onChange={(event) => setText(event.target.value)}
+              onKeyDown={(event) => {
+                if (event.key === "Enter" && !event.shiftKey) {
+                  event.preventDefault();
+                  void send();
+                }
+              }}
+            />
+            <Button type="submit" variant="primary" loading={pending} disabled={!text.trim() || !hasKey}>
+              Senden
+            </Button>
+          </div>
+        </form>
+      </section>
+
+      <aside className="flex w-[340px] shrink-0 flex-col border-l border-line bg-canvas">
+        <header className="border-b border-line px-4 py-3">
+          <h3 className="text-[11px] font-medium tracking-[0.14em] text-faint uppercase">MCP</h3>
+        </header>
+        <div ref={logRef} className="min-h-0 flex-1 overflow-auto px-4 py-3 font-mono text-[11px] leading-relaxed">
+          {log.length === 0 ? (
+            <p className="text-faint">Werkzeugaufrufe erscheinen hier.</p>
+          ) : (
+            log.map((line) => (
+              <div key={line.id} className="mb-3">
+                <p className="text-faint">
+                  {clock(line.at)} {line.dir === "call" ? "→" : "←"} {line.name}
+                  {line.dir === "result" ? `  ${line.ok ? "erfolgreich" : "fehlgeschlagen"}` : ""}
+                </p>
+                {line.body && (
+                  <pre className="mt-1 whitespace-pre-wrap break-words text-muted">{pretty(line.body)}</pre>
+                )}
+              </div>
+            ))
+          )}
+        </div>
+      </aside>
     </div>
   );
+}
+
+function ActivityList({ activity, thinking }: { activity?: Activity[]; thinking?: boolean }) {
+  const rows = activity ?? [];
+  if (!thinking && rows.length === 0) return null;
+  return (
+    <ul className="mb-3 space-y-1 text-[12px]">
+      {thinking && <li className="text-faint motion-safe:animate-pulse">denkt nach</li>}
+      {rows.map((row, index) => {
+        if (row.kind === "thinking") {
+          return (
+            <li key={`think_${index}`} className="text-faint">
+              denkt nach
+            </li>
+          );
+        }
+        if (row.kind === "reasoning") {
+          return (
+            <li key={`reason_${index}`} className="text-muted">
+              <span className="text-faint">Überlegung </span>
+              {row.text}
+            </li>
+          );
+        }
+        return (
+          <li key={`${row.name}_${index}`} className="font-mono text-[11px] text-muted">
+            {row.name}
+            <span className={row.ok === false ? "text-danger" : "text-running"}>
+              {" "}
+              {row.ok === false ? "fehlgeschlagen" : row.ok === true ? "erfolgreich" : "läuft"}
+            </span>
+          </li>
+        );
+      })}
+    </ul>
+  );
+}
+
+function liveActivity(live: LiveTurn): Activity[] {
+  const rows: Activity[] = [];
+  if (live.reasoning) rows.push({ kind: "reasoning", text: live.reasoning });
+  for (const tool of live.tools) {
+    if (!tool.done) rows.push({ kind: "tool", name: tool.name });
+    else rows.push({ kind: "tool", name: tool.name, ok: tool.ok });
+  }
+  return rows;
+}
+
+function applyLive(live: LiveTurn, event: StreamEvent): LiveTurn {
+  if (event.type === "thinking") return { ...live, thinking: true };
+  if (event.type === "reasoning") return { ...live, thinking: false, reasoning: event.text };
+  if (event.type === "text") return { ...live, thinking: false, text: event.text };
+  if (event.type === "tool-start") {
+    return {
+      ...live,
+      thinking: false,
+      tools: [...live.tools, { name: event.name, done: false }],
+      trace: [
+        ...live.trace,
+        { at: new Date().toISOString(), dir: "call", name: event.name, body: event.arguments },
+      ],
+    };
+  }
+  if (event.type === "tool-end") {
+    const tools = live.tools.map((tool, index) =>
+      index === live.tools.length - 1 && tool.name === event.name && !tool.done
+        ? { name: event.name, done: true, ok: event.ok }
+        : tool,
+    );
+    return {
+      ...live,
+      thinking: false,
+      tools,
+      trace: [
+        ...live.trace,
+        { at: new Date().toISOString(), dir: "result", name: event.name, body: event.output, ok: event.ok },
+      ],
+    };
+  }
+  return live;
+}
+
+function consoleLines(messages: ChatMessage[], live: LiveTurn | null): (TraceLine & { id: string })[] {
+  const lines: (TraceLine & { id: string })[] = [];
+  for (const entry of messages) {
+    for (const [index, line] of (entry.trace ?? []).entries()) {
+      lines.push({ ...line, id: `${entry.id}_${index}` });
+    }
+  }
+  for (const [index, line] of (live?.trace ?? []).entries()) {
+    lines.push({ ...line, id: `live_${index}` });
+  }
+  return lines;
+}
+
+function clock(iso: string): string {
+  const date = new Date(iso);
+  if (Number.isNaN(date.getTime())) return "";
+  return date.toLocaleTimeString("de-DE", { hour: "2-digit", minute: "2-digit", second: "2-digit" });
+}
+
+function pretty(body: string): string {
+  const text = body.trim();
+  if (!text) return "";
+  try {
+    return JSON.stringify(JSON.parse(text), null, 2);
+  } catch {
+    return body;
+  }
+}
+
+async function readEvents(res: Response, onEvent: (event: StreamEvent) => void) {
+  const reader = res.body?.getReader();
+  if (!reader) throw new Error("leer");
+  const decoder = new TextDecoder();
+  let buffer = "";
+  while (true) {
+    const chunk = await reader.read();
+    if (chunk.done) break;
+    buffer += decoder.decode(chunk.value, { stream: true });
+    const lines = buffer.split("\n");
+    buffer = lines.pop() ?? "";
+    for (const line of lines) {
+      const trimmed = line.trim();
+      if (!trimmed) continue;
+      onEvent(JSON.parse(trimmed) as StreamEvent);
+    }
+  }
+  const tail = buffer.trim();
+  if (tail) onEvent(JSON.parse(tail) as StreamEvent);
 }

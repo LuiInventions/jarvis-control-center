@@ -1,18 +1,9 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Cpu, FolderOpen, KeyRound, Rocket, Sparkles, Terminal } from "lucide-react";
+import { FolderOpen, Rocket, Terminal } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { Button, Card, Input } from "./ui";
-
-interface ProviderOpt {
-  id: string;
-  label: string;
-  keysUrl: string;
-  listModels: boolean;
-  defaultModel: string;
-  models: string[];
-}
 
 interface CodeCliOpt {
   id: string;
@@ -26,10 +17,6 @@ export default function SetupScreen({ onReady }: { onReady: () => void }) {
   const [projectsDir, setProjectsDir] = useState("");
   const [codeCli, setCodeCli] = useState("claude");
   const [codeClis, setCodeClis] = useState<CodeCliOpt[]>([]);
-  const [providers, setProviders] = useState<ProviderOpt[]>([]);
-  const [provider, setProvider] = useState("openai");
-  const [model, setModel] = useState("");
-  const [apiKey, setApiKey] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -40,19 +27,13 @@ export default function SetupScreen({ onReady }: { onReady: () => void }) {
       .then((r) => r.json())
       .then(
         (c: {
-          providers?: ProviderOpt[];
-          aiProvider?: string;
-          aiModel?: string;
           projectsDir?: string;
           codeCli?: string;
           codeClis?: CodeCliOpt[];
         }) => {
-          setProviders(c.providers ?? []);
           setCodeClis(c.codeClis ?? []);
           if (c.projectsDir) setProjectsDir(c.projectsDir);
           if (c.codeCli) setCodeCli(c.codeCli);
-          if (c.aiProvider) setProvider(c.aiProvider);
-          if (c.aiModel) setModel(c.aiModel);
         },
       )
       .catch(() => {});
@@ -63,29 +44,11 @@ export default function SetupScreen({ onReady }: { onReady: () => void }) {
     if (dir) setProjectsDir(dir);
   };
 
-  // Switching provider resets the model to that provider's default so the
-  // dropdown never shows a model that belongs to a different provider.
-  const onProvider = (id: string) => {
-    setProvider(id);
-    const p = providers.find((x) => x.id === id);
-    if (p) setModel(p.defaultModel);
-  };
-
   const submit = async () => {
     setBusy(true);
     setError(null);
     try {
       if (!projectsDir.trim()) throw new Error("Bitte einen Projektordner wählen.");
-
-      // AI key is optional — only save it if provided.
-      if (apiKey.trim()) {
-        const sec = await fetch("/api/secrets", {
-          method: "POST",
-          headers: { "content-type": "application/json" },
-          body: JSON.stringify({ providerKeys: { [provider]: apiKey.trim() } }),
-        });
-        if (!sec.ok) throw new Error("Key konnte nicht gespeichert werden.");
-      }
 
       const set = await fetch("/api/settings", {
         method: "POST",
@@ -93,8 +56,6 @@ export default function SetupScreen({ onReady }: { onReady: () => void }) {
         body: JSON.stringify({
           projectsDir: projectsDir.trim(),
           codeCli,
-          aiProvider: provider,
-          aiModel: model.trim() || undefined,
           // Stamp this version so the welcome screen doesn't reappear until the
           // next update (config.ready gate). The GitHub token is left intact.
           setupComplete: true,
@@ -110,9 +71,6 @@ export default function SetupScreen({ onReady }: { onReady: () => void }) {
       setBusy(false);
     }
   };
-
-  const current = providers.find((p) => p.id === provider);
-  const modelOptions = current?.models ?? [];
 
   return (
     <div className="flex h-screen items-center justify-center overflow-auto bg-elevated p-6">
@@ -175,69 +133,6 @@ export default function SetupScreen({ onReady }: { onReady: () => void }) {
               ),
             )}
           </div>
-        </Card>
-
-        <Card className="space-y-3 p-5">
-          <Field
-            icon={Sparkles}
-            title="AI-Provider (optional)"
-            hint="Für Prompt-Verbesserung & Session-Review. Ohne Key bleibt die App nutzbar — nur diese KI-Funktionen sind dann aus."
-          />
-          <select
-            value={provider}
-            onChange={(e) => onProvider(e.target.value)}
-            className="h-9 w-full cursor-pointer rounded-md border border-line bg-raised px-2.5 text-sm text-ink outline-none focus:border-accent"
-          >
-            {providers.map((p) => (
-              <option key={p.id} value={p.id}>
-                {p.label}
-              </option>
-            ))}
-          </select>
-
-          {modelOptions.length > 0 && (
-            <div className="flex items-center gap-2">
-              <Cpu className="size-4 shrink-0 text-faint" />
-              <select
-                value={model}
-                onChange={(e) => setModel(e.target.value)}
-                className="h-9 w-full cursor-pointer rounded-md border border-line bg-raised px-2.5 text-sm text-ink outline-none focus:border-accent"
-              >
-                {model && !modelOptions.includes(model) && (
-                  <option value={model}>{model} (aktuell)</option>
-                )}
-                {modelOptions.map((m) => (
-                  <option key={m} value={m}>
-                    {m}
-                  </option>
-                ))}
-              </select>
-            </div>
-          )}
-
-          <div className="flex items-center gap-2">
-            <KeyRound className="size-4 shrink-0 text-faint" />
-            <Input
-              type="password"
-              value={apiKey}
-              onChange={(e) => setApiKey(e.target.value)}
-              placeholder={`${current?.label ?? "API"}-Key (optional)`}
-              className="font-mono text-[13px]"
-            />
-          </div>
-          {current && (
-            <p className="text-xs text-faint">
-              Key holen:{" "}
-              <a
-                href={current.keysUrl}
-                target="_blank"
-                rel="noreferrer"
-                className="cursor-pointer text-accent hover:underline"
-              >
-                {current.keysUrl}
-              </a>
-            </p>
-          )}
         </Card>
 
         {error && <p className="text-sm text-danger">{error}</p>}

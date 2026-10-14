@@ -5,6 +5,15 @@ follow `package.json`. From 1.9.6 each `v*` tag publishes
 `jarvis-control-center-Setup-<version>.exe`. Earlier installers were named
 `cc-control-center-Setup-<version>.exe`.
 
+## 1.9.25 — 2026-10-14
+
+### Jarvis chat
+
+- Jarvis is the first sidebar entry. The chat uses GPT 6 Luna at low reasoning effort.
+- The OpenAI key is entered in the Jarvis tab, including the first time that tab opens. A button there replaces it. Settings, the first-run screen, and setup no longer ask for OpenAI, Cartesia, Picovoice, or other provider keys.
+- The reply shows when Jarvis is thinking and lists each tool call as erfolgreich or fehlgeschlagen while it runs. A panel on the right shows the call and the MCP server's answer.
+- HTTPS uses the Windows certificate store, so a local inspector no longer surfaces as "Connection error."
+
 ## 1.9.24 — 2026-10-14
 
 ### Jarvis chat and session text

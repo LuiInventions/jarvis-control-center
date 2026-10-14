@@ -35,12 +35,12 @@ interface SectionDef {
 }
 
 const MAIN_SECTIONS: SectionDef[] = [
+  { id: "jarvis", label: "Jarvis", desc: "Chat mit GPT 6 Luna", icon: Bot },
   { id: "remote", label: "Remote", desc: "SSH to your server and start a code CLI", icon: Server },
   { id: "github-launch", label: "GitHub", desc: "Launch a code CLI in a connected repo", icon: FolderGit2 },
   { id: "launcher", label: "Local", desc: "Launch a code CLI in a local folder", icon: FolderOpen },
   { id: "github", label: "Repos", desc: "Connect a GitHub token and clone repos", icon: Code },
   { id: "sessions", label: "Sessions", desc: "Live code-CLI sessions, visualized", icon: Gamepad2 },
-  { id: "jarvis", label: "Jarvis", desc: "Chat mit GPT 6 Luna", icon: Bot },
 ];
 
 const SETTINGS_SECTION: SectionDef = {

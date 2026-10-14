@@ -60,6 +60,25 @@ export function friendlyAiError(err: unknown): string {
   return msg || "Unbekannter Fehler.";
 }
 
+/** Same mapping, with the TLS or socket code when the SDK only says "Connection error." */
+export function explainAiFailure(err: unknown): string {
+  const friendly = friendlyAiError(err);
+  const codes: string[] = [];
+  let current: unknown = err;
+  for (let depth = 0; depth < 6 && current && typeof current === "object"; depth++) {
+    const row = current as { code?: unknown; cause?: unknown };
+    if (typeof row.code === "string" && row.code) codes.push(row.code);
+    current = row.cause;
+  }
+  if (/^connection error\.?$/i.test(friendly) || /fetch failed/i.test(friendly)) {
+    const code = codes.find((item) => item !== "UND_ERR_SOCKET");
+    return code
+      ? `Verbindung zu OpenAI fehlgeschlagen (${code}).`
+      : "Verbindung zu OpenAI fehlgeschlagen.";
+  }
+  return friendly;
+}
+
 /**
  * Verify a provider's stored key actually works by making one minimal chat
  * completion against the given (or default) model. Tests the provider id passed

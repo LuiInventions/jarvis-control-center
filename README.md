@@ -19,9 +19,10 @@
 </p>
 
 > [!TIP]
-> **v1.9.24** is the current release. The sidebar order is **Remote**, **GitHub**,
-> **Local**, **Repos**, **Sessions**, **Jarvis**. Jarvis is a chat with GPT 6 Luna
-> that drives the app through the local MCP server and keeps the conversation.
+> **v1.9.25** is the current release. The sidebar order is **Jarvis**, **Remote**,
+> **GitHub**, **Local**, **Repos**, **Sessions**. Jarvis is a chat with GPT 6 Luna
+> at low reasoning effort. The OpenAI key is entered in that tab. The reply shows
+> each tool call, and a panel on the right shows what the local MCP server answered.
 > Running GitHub, Local, and Remote sessions are numbered, and a tool reads a
 > session's command-window text. Remote starts a code CLI on your server and
 > can upload and download files there. Dropping or choosing a folder asks for
@@ -32,7 +33,7 @@
 > write into the folder on this PC. **Repos → New repo** creates the repository
 > in the clones folder. That path is fixed. **Repos → Update** commits local
 > changes, merges what GitHub gained, and pushes.
-> The installer is `jarvis-control-center-Setup-1.9.24.exe`. v1.8.0 was withdrawn.
+> The installer is `jarvis-control-center-Setup-1.9.25.exe`. v1.8.0 was withdrawn.
 > v1.9.6 has no installer. [**Changelog**](CHANGELOG.md)
 
 <img width="1920" height="1080" alt="Jarvis Control Center" src="https://github.com/user-attachments/assets/961f27e3-c90e-4594-bbbc-ce2fa462e56b" />
@@ -49,8 +50,8 @@ A terminal gives you one session, no view of the server, and a manual `git add` 
 - **Remote** — log into your server with SSH and start Claude Code, Grok, or Codex there, in a folder you pick, with the server's files beside the terminal.
 - **GitHub** — start the same CLI inside a repo you cloned. **Repos** keeps the token, the clone, and a one-click **Update** that commits and pushes for you.
 - **Local** — the same launcher against a folder on this PC.
+- **Jarvis** — a chat with GPT 6 Luna at low reasoning effort. The OpenAI key is entered in this tab. It calls the local MCP tools, shows each call in the reply, and prints the server's answer in the panel on the right.
 - **Sessions** — every running agent as a character in a pixel office
-- **Jarvis** — a chat with GPT 6 Luna. It calls the local MCP tools, including the numbered session lists and the command-window read.
 
 It ships as a **Windows desktop app**
 ([**download the `.exe`**](https://github.com/LuiInventions/jarvis-control-center/releases/latest))
@@ -164,11 +165,9 @@ Each character has its own name. Above the name is where it was started: **GitHu
 
 - **Code CLI** — Claude Code (`claude`), Grok (`grok`), or ChatGPT Codex (`codex`). Local, GitHub, and Remote all start this binary. Model and effort stay on the CLI's own defaults (**Standard**).
 - **Theme** — Ink, Dusk, Moss, Tide, Clay, Plum. Dusk is used when none is saved.
-- **AI provider** *(optional)* — OpenAI, Groq, xAI (Grok), OpenRouter, DeepSeek, Mistral, Together, Fireworks, Perplexity, Google Gemini, or Cerebras. Pick a model from that provider's list. The key stays server-side. The UI shows only whether it is set.
-- **Voice** *(optional)* — Cartesia for speech-to-text and reading text aloud, Picovoice for a local wake-word.
 - **Projects folder** — the directory Local treats as home. A native folder picker is used in the desktop app.
 
-The first-run screen asks for the projects folder, the code CLI, and an optional provider key. After an update that screen runs once more. The GitHub token, saved keys, and clones stay.
+The first-run screen asks for the projects folder and the code CLI. It does not ask for an API key. The OpenAI key for Jarvis is entered in the Jarvis tab. After an update that screen runs once more. The GitHub token, the Jarvis key, and clones stay.
 
 ---
 
@@ -202,7 +201,7 @@ Most people want **Option A**. **Option B** is for running from source.
    [**latest release**](https://github.com/LuiInventions/jarvis-control-center/releases/latest):
    **`jarvis-control-center-Setup-<version>.exe`**.
 2. **Run it.** It installs per-user (no admin rights) and adds a Start-menu shortcut. The UI is its own window. The loopback server stays inside the process.
-3. **First launch → setup screen.** Pick your projects folder, choose the code CLI (Claude Code, Grok, or ChatGPT Codex), and optionally an AI provider and key.
+3. **First launch → setup screen.** Pick your projects folder and choose the code CLI (Claude Code, Grok, or ChatGPT Codex). The OpenAI key is entered later, in the Jarvis tab.
 
 > **Publisher.** The app is published by **LT Digital Concepts (Luis Kleemann)**.
 > Until the build is signed with a CA-issued certificate, Windows SmartScreen may
@@ -210,8 +209,8 @@ Most people want **Option A**. **Option B** is for running from source.
 > signing pipeline is described in [`build/SIGNING.md`](build/SIGNING.md).
 
 > **Updating keeps your data.** The welcome screen runs once so you can
-> re-confirm the provider and model. The per-user profile — GitHub token, saved
-> keys, saved SSH logins — stays. Clones live under
+> re-confirm the projects folder and the code CLI. The per-user profile — GitHub token, the Jarvis key, saved
+> SSH logins — stays. Clones live under
 > `%LOCALAPPDATA%\Jarvis Control Center\github_repos`, so replacing the program
 > folder does not delete them.
 
@@ -252,8 +251,7 @@ cd jarvis-control-center
 ```
 
 It verifies Node.js and git, runs `npm install`, creates `.env.local` from
-`.env.example`, and prompts for `OPENAI_API_KEY`, an optional `CARTESIA_API_KEY`,
-and your projects folder.
+`.env.example`, and asks for your projects folder. The OpenAI key is entered in the Jarvis tab.
 
 If PowerShell blocks the script:
 
@@ -277,7 +275,6 @@ In a source checkout, GitHub clones land in `github_repos` inside the working di
 ```powershell
 npm install
 copy .env.example .env.local
-#   -> set OPENAI_API_KEY (or have it in the shell environment)
 #   -> set PROJECTS_DIR if you want a folder other than ./projects
 npm run dev
 ```
@@ -293,8 +290,7 @@ npm run dev
 - **One code CLI**, installed and logged in: **Claude Code** (`claude`), **Grok** (`grok`, [Grok Build](https://x.ai/cli)), or **ChatGPT Codex** (`codex`).
 - **OpenSSH Client** for the Remote tab (`ssh.exe`, the Windows optional feature).
 - **VS Codium** or **VS Code** for the editor tab. Codium is preferred when both are installed.
-- *(Optional)* an API key for one of 11 AI providers — OpenAI, Groq, xAI/Grok, OpenRouter, DeepSeek, Mistral, Together, Fireworks, Perplexity, Gemini, Cerebras.
-- *(Optional)* a **Cartesia** key for voice, and a **Picovoice** key for the local wake-word.
+- An **OpenAI API key**, entered in the Jarvis tab, for the GPT 6 Luna chat.
 
 ---
 
@@ -306,15 +302,7 @@ Precedence, highest first: **Settings UI** (`.data/settings.json`) → **environ
 
 | Variable | What it controls | Default |
 |---|---|---|
-| `OPENAI_API_KEY` | OpenAI key. **Server-side only.** | – *(optional)* |
-| `GROQ_API_KEY`, `XAI_API_KEY`, `OPENROUTER_API_KEY`, `DEEPSEEK_API_KEY`, `MISTRAL_API_KEY`, `TOGETHER_API_KEY`, `FIREWORKS_API_KEY`, `PERPLEXITY_API_KEY`, `GEMINI_API_KEY`, `CEREBRAS_API_KEY` | Keys for the other providers. Server-side only. | – *(optional)* |
-| `OPENAI_MODEL` | Legacy OpenAI model. Provider and model are chosen in Settings (`aiProvider` / `aiModel`). | `gpt-5.4-mini` |
-| `CARTESIA_API_KEY` | Cartesia key — voice in (STT) and out (TTS). Server-side only. | – *(optional)* |
-| `CARTESIA_VOICE` | TTS voice (selectable in Settings) | Sebastian – Orator |
-| `CARTESIA_TTS_MODEL` | Text-to-speech model | `sonic-turbo` |
-| `CARTESIA_STT_MODEL` | Speech-to-text model | `ink-whisper` |
-| `VOICE_LANGUAGE` | Voice language | `de` |
-| `PICOVOICE_ACCESS_KEY` | Local wake-word (Porcupine) | – |
+| `OPENAI_API_KEY` | Optional fallback for the Jarvis key. The tab's own field is the one to use. **Server-side only.** | – |
 | `PROJECTS_DIR` | Folder Local starts from, until you pick another in the app | `./projects` |
 | `HOST` | Bind address. Leave this. | `127.0.0.1` |
 | `PORT` | Port | `3100` |
@@ -326,9 +314,8 @@ The code CLI is `codeCli` in `.data/settings.json`: `claude`, `grok`, or `codex`
 `%LOCALAPPDATA%\Jarvis Control Center\github_repos` before the server starts.
 A dev run uses `<cwd>/github_repos`. That path is not a Settings field.
 
-> **Keys never reach the frontend.** The UI shows whether each key is set. In a
-> source checkout, keys from setup or Settings go to a gitignored
-> `.data/secrets.json`. In the desktop build they are encrypted with Windows DPAPI.
+> **The Jarvis key never reaches the chat transcript.** In a source checkout it is stored in a gitignored
+> `.data/secrets.json`. In the desktop build it is encrypted with Windows DPAPI. The GitHub token is stored the same way.
 
 `PROJECTS_DIR` defaults to a folder inside the app directory. Point it elsewhere
 from Settings or the environment (absolute path).

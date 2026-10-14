@@ -1,8 +1,7 @@
 #requires -Version 5.1
 <#
 .SYNOPSIS
-    Setup for Claude Code Control Center: installs dependencies and configures
-    API keys in .env.local.
+    Setup for Jarvis Control Center: installs dependencies and asks for the projects folder.
 
 .DESCRIPTION
     Run from the project root:
@@ -13,7 +12,7 @@
 
 [CmdletBinding()]
 param(
-    # Skip the interactive API-key prompts (only install dependencies + create .env.local).
+    # Skip the projects-folder prompt (only install dependencies + create .env.local).
     [switch]$NoPrompt
 )
 
@@ -90,13 +89,7 @@ if (-not $NoPrompt) {
     $lines = Get-Content $envLocal
 
     Write-Host ""
-    Write-Host "Enter your API keys. Press Enter to skip and keep the current value." -ForegroundColor White
-
-    $openai = Read-Host "OPENAI_API_KEY (required for prompt improver + review)"
-    if ($openai.Trim()) { $lines = Set-EnvValue -Lines $lines -Key 'OPENAI_API_KEY' -Value $openai.Trim() }
-
-    $cartesia = Read-Host "CARTESIA_API_KEY (optional, for reading reviews aloud)"
-    if ($cartesia.Trim()) { $lines = Set-EnvValue -Lines $lines -Key 'CARTESIA_API_KEY' -Value $cartesia.Trim() }
+    Write-Host "Press Enter to skip and keep the current value." -ForegroundColor White
 
     $projects = Read-Host "PROJECTS_DIR (folder whose subfolders are your projects)"
     if ($projects.Trim()) { $lines = Set-EnvValue -Lines $lines -Key 'PROJECTS_DIR' -Value $projects.Trim() }
@@ -104,7 +97,7 @@ if (-not $NoPrompt) {
     Set-Content -Path $envLocal -Value $lines -Encoding UTF8
     Write-Ok "Saved configuration to .env.local"
 } else {
-    Write-Warn2 "-NoPrompt set: edit .env.local manually to add your API keys."
+    Write-Warn2 "-NoPrompt set: edit .env.local if the projects folder should change."
 }
 
 # --- Done --------------------------------------------------------------------

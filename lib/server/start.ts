@@ -10,6 +10,7 @@ import { startUsagePoller } from "./usage-poller";
 import { warmCodeCli } from "./cli-warm";
 import { handleMcp, isMcpRequest } from "./mcp/http";
 import { publishMcpEndpoint, unpublishMcpEndpoint } from "./mcp/endpoint";
+import { trustSystemCertificates } from "./system-ca";
 
 export interface RunningServer {
   host: string;
@@ -24,6 +25,7 @@ export interface RunningServer {
 export async function startServer(
   opts: { quiet?: boolean; dir?: string } = {},
 ): Promise<RunningServer> {
+  trustSystemCertificates();
   const { host, port } = getConfig();
   const dev = process.env.NODE_ENV !== "production";
 
