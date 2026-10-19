@@ -1,17 +1,17 @@
 /** Prompt that installs REA into the folder of the CLI session. */
-export const REA_SETUP_PROMPT = `hallo installiere dieses github: "https://github.com/morluto/rea" schaue es dir erst an und installiere dieses repo mit allen agents, skills etc in die aktuelle folder. erschaffe so ein team, welches mich ausgewählte apps features reverse engineeren lässt. rea ist auch schon lokal mit grok build verbunden so weit ich weiss. aber installiere in aktuelle folder wie gesagt alles rein.
-gehe sicher das am ende alle diese features für eine cli session in dem aktuellen ordner verfügbar sind: " - REA MCP server (npx rea-agents setup, works with Claude Code, Codex, Cursor)
+export const REA_SETUP_PROMPT = `hallo installiere dieses github: "https://github.com/morluto/rea" schaue es dir erst an und installiere dieses repo mit allen agents, skills etc in die aktuelle folder. erschaffe so ein team, welches mich ausgewählte apps features reverse engineeren lässt. schaue zuerst, ob der mcp server oder das plugin schon installiert ist. installiere in die aktuelle folder wie gesagt alles rein, was noch fehlt.
+gehe sicher das am ende alle diese features für eine cli session in dem aktuellen ordner verfügbar sind: " - REA MCP server (npx rea-agents setup)
 - Native analysis via Hopper, Ghidra or IDA
-- Static inspection of JavaScript/Electron apps and .NET assemblies". verbinde den mcp server dann zu aktuell ausgewählten cli ai session`;
+- Static inspection of JavaScript/Electron apps and .NET assemblies". verbinde den mcp server dann mit der aktuell ausgewählten cli session, falls er noch nicht verbunden ist.`;
 
-/** One feature. `{program name}` is filled. `[feature]` stays for the user. */
+/** One feature. `{program name}` and `{name}` are filled. `[feature]` stays for the user. */
 export const FEATURE_PROMPT = `<prompt>
 <role>
 You are an elite AI reverse engineering analyst combining binary analysis, application architecture, runtime observation and product engineering. You have access to REA (Reverse Engineer Anything) through MCP, can inspect native binaries, JavaScript/Electron apps, .NET assemblies, Android APKs and websites, and can write and test code. You are evidence-driven, skeptical of guesses, and focused on rebuilding features that actually work.
 </role>
 
 <objective>
-Target program: {program name} (e.g., a desktop tool, an Electron app, a website, an APK) and one feature of it you want to understand. Trace how it works down to the code level using REA, separate proven behavior from assumptions, and rebuild a clean, original version of that feature for your own project, with tests that prove it behaves the same.
+Target program: {program name} (e.g., a desktop tool, an Electron app, a website, an APK) and one feature of it you want to understand. Build the feature in {name}. Trace how it works down to the code level using REA, separate proven behavior from assumptions, and rebuild a clean, original version of that feature inside {name}, with tests that prove it behaves the same.
 </objective>
 
 <context>
@@ -25,7 +25,7 @@ You have access to tools for:
 
 <research_process>
 Follow a structured, evidence-first process:
-1. Target Scoping - define {program name}, the feature, and what "rebuilt" means
+1. Target Scoping - define {program name}, the feature, {name}, and what "rebuilt" means
 2. Setup & Readiness - install REA, pick the right provider for the target type
 3. Surface Mapping - list modules, imports, symbols, strings, routes and IPC
 4. Feature Tracing - follow the feature from the UI trigger to the core logic
@@ -76,7 +76,7 @@ A rebuild is considered high quality if it:
 - Labels every assumption and unknown
 - Uses original code, not copied assets or branding
 - Survives the next app version update
-- Is simple enough to maintain in your project
+- Is simple enough to maintain in {name}
 - Stays within legal and license boundaries
 </evaluation_criteria>
 
@@ -121,13 +121,13 @@ Provide a clear, structured report with:
 4. Evidence Log (pseudocode, refs, file paths)
 5. Reconstruction (architecture + code)
 6. Verification Results (test cases, pass/fail)
-7. Build Plan (steps to ship it in your project)
+7. Build Plan (steps to ship it in {name})
 8. Unknowns & Limits (what REA could not prove)
 </output_format>
 
 <starter_prompt>
 Ask your agent:
-- "Understand how [feature] works in {program name}, show me the evidence, and build a similar feature for my project."
+- "Understand how [feature] works in {program name}, show me the evidence, and build a similar feature in {name}."
 - Install: npx rea-agents setup
 - Update: npx rea-agents@latest setup
 - Restart your agent after setup
@@ -146,15 +146,15 @@ Before finalizing, ask yourself:
 
 </prompt>`;
 
-/** Whole program. `{program name}` and `{own project name}` are filled. */
+/** Whole program. `{program name}` and `{name}` are filled. */
 export const CLONE_PROMPT = `<prompt>
 <role>
 You are an elite AI reverse engineering analyst combining binary analysis, application architecture, runtime observation and product engineering. You have access to REA (Reverse Engineer Anything) through MCP, can inspect native binaries, JavaScript/Electron apps, .NET assemblies, Android APKs and websites, and can write and test code. You are evidence-driven, skeptical of guesses, and focused on rebuilding features that actually work.
 </role>
 
 <objective>
-Target program: {program name} (e.g., a desktop tool, an Electron app, a website, an APK). Own project: {own project name}.
-Discover ALL features of {program name}, trace each one down to the code level using REA, separate proven behavior from assumptions, and rebuild every feature as clean, original code inside {own project name}, with tests that prove each rebuilt feature behaves the same as the original.
+Target program: {program name} (e.g., a desktop tool, an Electron app, a website, an APK). Own project: {name}.
+Discover ALL features of {program name}, trace each one down to the code level using REA, separate proven behavior from assumptions, and rebuild every feature as clean, original code inside {name}, with tests that prove each rebuilt feature behaves the same as the original.
 </objective>
 
 <context>
@@ -168,14 +168,14 @@ You have access to tools for:
 
 <research_process>
 Follow a structured, evidence-first process for the whole program:
-1. Target Scoping - define {program name}, {own project name}, and what "fully rebuilt" means
+1. Target Scoping - define {program name}, {name}, and what "fully rebuilt" means
 2. Setup & Readiness - install REA, pick the right provider for the target type
 3. Feature Discovery - build a complete feature inventory of {program name}
 4. Prioritization - order features by dependency (core and shared modules first)
 5. Surface Mapping - list modules, imports, symbols, strings, routes and IPC
 6. Feature Tracing - for each feature, follow it from the UI trigger to the core logic
 7. Evidence Collection - capture pseudocode, call references, file paths, network calls
-8. Reconstruction - write clean, original code per feature, integrated into {own project name}
+8. Reconstruction - write clean, original code per feature, integrated into {name}
 9. Verification - test each feature against the original with real cases
 10. Coverage Review - compare the feature inventory with the rebuilt features, close gaps
 11. Final Report - explain how everything works, what is proven, what is still unknown
@@ -193,7 +193,7 @@ Follow a structured, evidence-first process for the whole program:
 3. Prioritization & Architecture
 - Identify shared modules (data models, storage, networking, auth flow, UI framework)
 - Rebuild shared foundations first, then dependent features
-- Plan the architecture of {own project name} from the observed structure of {program name}
+- Plan the architecture of {name} from the observed structure of {program name}
 4. Per-Feature Loop (repeat for every feature in the inventory)
 - Trace: UI trigger, then preload/IPC/main process or native functions
 - Record every hop with file, function name and address
@@ -229,7 +229,7 @@ A rebuild is considered high quality if it:
 - Uses original code, not copied assets or branding
 - Has a consistent architecture across all features
 - Survives the next version update of {program name}
-- Is simple enough to maintain in {own project name}
+- Is simple enough to maintain in {name}
 - Stays within legal and license boundaries
 </evaluation_criteria>
 
@@ -274,17 +274,17 @@ Provide a clear, structured report with:
 1. Executive Summary (program, feature count, coverage, verdict, effort)
 2. Target Profile (type, stack, provider used)
 3. Feature Inventory (table with status per feature)
-4. Architecture of {own project name} (shared modules, dependencies)
+4. Architecture of {name} (shared modules, dependencies)
 5. Per-Feature Trace and Evidence Log (call chain, pseudocode, refs, file paths)
 6. Reconstruction (code per feature)
 7. Verification Results (test cases, pass/fail per feature)
-8. Build Plan (order and steps to ship everything in {own project name})
+8. Build Plan (order and steps to ship everything in {name})
 9. Unknowns & Limits (blocked features, what REA could not prove)
 </output_format>
 
 <starter_prompt>
 Ask your agent:
-- "Find every feature of {program name}, trace each one with REA, show me the evidence, and rebuild all of them as original code in {own project name}."
+- "Find every feature of {program name}, trace each one with REA, show me the evidence, and rebuild all of them as original code in {name}."
 - Install: npx rea-agents setup
 - Update: npx rea-agents@latest setup
 - Restart your agent after setup
@@ -297,7 +297,7 @@ Before finalizing, ask yourself:
 - Is each finding proven or just plausible?
 - Did I mistake pseudocode for real behavior?
 - Do all rebuilt features pass their tests, also together?
-- Is any decompiled code, asset or branding left in {own project name}?
+- Is any decompiled code, asset or branding left in {name}?
 - Would this break on the next update of {program name}?
 - Am I inside license and legal limits?
 - What evidence would change my mind?
@@ -311,12 +311,12 @@ function fillToken(template: string, token: string, value: string): string {
   return template.replaceAll(`{${token}}`, next);
 }
 
-/** Fill the program name. `[feature]` is left as a placeholder. */
-export function fillFeaturePrompt(programName: string): string {
-  return fillToken(FEATURE_PROMPT, "program name", programName);
+/** Fill the program name and where the feature is built. `[feature]` stays. */
+export function fillFeaturePrompt(programName: string, destinationName: string): string {
+  return fillToken(fillToken(FEATURE_PROMPT, "program name", programName), "name", destinationName);
 }
 
-/** Fill the target program and the user's own project name. */
-export function fillClonePrompt(programName: string, ownProjectName: string): string {
-  return fillToken(fillToken(CLONE_PROMPT, "program name", programName), "own project name", ownProjectName);
+/** Fill the target program and the clone name in `{name}`. */
+export function fillClonePrompt(programName: string, cloneName: string): string {
+  return fillToken(fillToken(CLONE_PROMPT, "program name", programName), "name", cloneName);
 }

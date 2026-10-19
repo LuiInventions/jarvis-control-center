@@ -5,6 +5,13 @@ follow `package.json`. From 1.9.6 each `v*` tag publishes
 `jarvis-control-center-Setup-<version>.exe`. Earlier installers were named
 `cc-control-center-Setup-<version>.exe`.
 
+## 1.9.27 — 2026-10-19
+
+### REA
+
+- **REA starten** asks for a name after **Features kopieren** or **Ganze App kopieren**. That name is the clone, or the project the feature is built into. It is no longer taken from the REA folder.
+- The setup prompt no longer mentions Grok or claims that the MCP server is already installed. It tells the session to check whether the MCP server or the plugin is already installed.
+
 ## 1.9.26 — 2026-10-19
 
 ### REA tab

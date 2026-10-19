@@ -1151,7 +1151,6 @@ export default function LauncherSection({
       )}
       {source === "rea" && reaOpen && projectPath.trim() && (
         <ReaWizard
-          projectPath={projectPath.trim()}
           onClose={() => setReaOpen(false)}
           onStart={(prompt) => {
             setReaOpen(false);

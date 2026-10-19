@@ -14,19 +14,13 @@ interface DesktopApp {
   icon: string | null;
 }
 
-type Step = "apps" | "mode" | "prompt";
+type Step = "apps" | "mode" | "name" | "prompt";
 type Mode = "feature" | "clone";
 
-function baseName(folder: string): string {
-  return folder.split(/[/\\]/).filter(Boolean).pop() ?? "";
-}
-
 export default function ReaWizard({
-  projectPath,
   onClose,
   onStart,
 }: {
-  projectPath: string;
   onClose: () => void;
   onStart: (prompt: string) => void;
 }) {
@@ -37,7 +31,7 @@ export default function ReaWizard({
   const [query, setQuery] = useState("");
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [mode, setMode] = useState<Mode>("feature");
-  const [ownName, setOwnName] = useState(baseName(projectPath));
+  const [ownName, setOwnName] = useState("");
   const [text, setText] = useState("");
   const [copied, setCopied] = useState(false);
   const [reload, setReload] = useState(0);
@@ -83,19 +77,32 @@ export default function ReaWizard({
     );
   }, [apps, query]);
 
-  const openPrompt = (next: Mode) => {
+  const chooseMode = (next: Mode) => {
     if (!selected) return;
     setMode(next);
-    const own = ownName.trim() || baseName(projectPath);
+    setCopied(false);
+    setStep("name");
+  };
+
+  const filled = (next: Mode, name: string) => {
+    if (!selected) return;
+    setText(
+      next === "feature" ? fillFeaturePrompt(selected.name, name) : fillClonePrompt(selected.name, name),
+    );
+  };
+
+  const confirmName = () => {
+    const own = ownName.trim();
+    if (!selected || !own) return;
     setOwnName(own);
-    setText(next === "feature" ? fillFeaturePrompt(selected.name) : fillClonePrompt(selected.name, own));
+    filled(mode, own);
     setCopied(false);
     setStep("prompt");
   };
 
   const retarget = (name: string) => {
     setOwnName(name);
-    if (selected) setText(fillClonePrompt(selected.name, name));
+    filled(mode, name);
     setCopied(false);
   };
 
@@ -105,8 +112,15 @@ export default function ReaWizard({
     window.setTimeout(() => setCopied(false), 1600);
   };
 
+  const nameLabel = mode === "feature" ? "Wohin soll das Feature?" : "Name des Klons";
   const title =
-    step === "apps" ? "Programm wählen" : step === "mode" ? "Was soll nachgebaut werden?" : "Prompt";
+    step === "apps"
+      ? "Programm wählen"
+      : step === "mode"
+        ? "Was soll nachgebaut werden?"
+        : step === "name"
+          ? nameLabel
+          : "Prompt";
 
   return createPortal(
     <div
@@ -130,7 +144,11 @@ export default function ReaWizard({
                 ? "Installierte Programme, Startmenü und Electron-Apps."
                 : step === "mode"
                   ? selected?.name
-                  : "Nur Software, die dir gehört oder die du untersuchen darfst."}
+                  : step === "name"
+                    ? mode === "feature"
+                      ? "Name des Projekts, in das die Funktion eingebaut wird."
+                      : "Name des Klons, der gebaut wird."
+                    : "Nur Software, die dir gehört oder die du untersuchen darfst."}
             </p>
           </div>
           <button
@@ -216,22 +234,22 @@ export default function ReaWizard({
           <div className="flex flex-col gap-3 px-5 py-5">
             <button
               type="button"
-              onClick={() => openPrompt("feature")}
+              onClick={() => chooseMode("feature")}
               className="cursor-pointer rounded-xl border border-line bg-raised/70 px-4 py-4 text-left hover:border-accent"
             >
               <div className="text-sm font-medium text-ink">Features kopieren</div>
               <p className="mt-1 text-xs leading-relaxed text-muted">
-                Eine Funktion von {selected?.name} nachvollziehen. [feature] bleibt im Prompt stehen.
+                Eine Funktion von {selected?.name} nachvollziehen. Danach den Namen des Zielprojekts eingeben.
               </p>
             </button>
             <button
               type="button"
-              onClick={() => openPrompt("clone")}
+              onClick={() => chooseMode("clone")}
               className="cursor-pointer rounded-xl border border-line bg-raised/70 px-4 py-4 text-left hover:border-accent"
             >
               <div className="text-sm font-medium text-ink">Ganze App kopieren</div>
               <p className="mt-1 text-xs leading-relaxed text-muted">
-                Alle Funktionen als eigenen Code in deinem Programm nachbauen.
+                Alle Funktionen als eigenen Klon nachbauen. Danach den Namen des Klons eingeben.
               </p>
             </button>
             <div className="flex justify-end">
@@ -242,24 +260,50 @@ export default function ReaWizard({
           </div>
         )}
 
+        {step === "name" && (
+          <div className="flex flex-col gap-3 px-5 py-5">
+            <label className="flex flex-col gap-1.5">
+              <span className="text-xs text-muted">{nameLabel}</span>
+              <input
+                value={ownName}
+                onChange={(event) => setOwnName(event.target.value)}
+                onKeyDown={(event) => {
+                  if (event.key === "Enter") confirmName();
+                }}
+                placeholder="Name"
+                aria-label={nameLabel}
+                spellCheck={false}
+                autoFocus
+                className="h-9 rounded-lg border border-transparent bg-raised/80 px-2.5 text-sm text-ink outline-none"
+              />
+            </label>
+            <div className="flex justify-end gap-2">
+              <Button variant="secondary" onClick={() => setStep("mode")}>
+                Zurück
+              </Button>
+              <Button variant="primary" disabled={!ownName.trim()} onClick={confirmName}>
+                Weiter
+              </Button>
+            </div>
+          </div>
+        )}
+
         {step === "prompt" && (
           <div className="flex min-h-0 flex-1 flex-col gap-3 px-5 py-4">
-            {mode === "clone" && (
-              <label className="flex flex-col gap-1.5">
-                <span className="text-xs text-muted">Eigenes Programm</span>
-                <input
-                  value={ownName}
-                  onChange={(event) => retarget(event.target.value)}
-                  aria-label="Eigenes Programm"
-                  spellCheck={false}
-                  className="h-9 rounded-lg border border-transparent bg-raised/80 px-2.5 text-sm text-ink outline-none"
-                />
-              </label>
-            )}
+            <label className="flex flex-col gap-1.5">
+              <span className="text-xs text-muted">{nameLabel}</span>
+              <input
+                value={ownName}
+                onChange={(event) => retarget(event.target.value)}
+                aria-label={nameLabel}
+                spellCheck={false}
+                className="h-9 rounded-lg border border-transparent bg-raised/80 px-2.5 text-sm text-ink outline-none"
+              />
+            </label>
             <p className="text-xs text-muted">
               {mode === "feature"
                 ? "[feature] im Text durch die gewünschte Funktion ersetzen."
-                : "Der Text folgt dem Namen des eigenen Programms."}
+                : "Der Text folgt dem Namen des Klons."}
             </p>
             <textarea
               value={text}
@@ -272,7 +316,7 @@ export default function ReaWizard({
               className="min-h-64 w-full flex-1 resize-none rounded-lg border border-transparent bg-raised/80 p-3 font-mono text-[12px] leading-relaxed text-ink outline-none"
             />
             <div className="flex flex-wrap justify-end gap-2">
-              <Button variant="secondary" onClick={() => setStep("mode")}>
+              <Button variant="secondary" onClick={() => setStep("name")}>
                 Zurück
               </Button>
               <Button variant="secondary" icon={Copy} onClick={() => void copy()} disabled={!text.trim()}>
@@ -284,7 +328,7 @@ export default function ReaWizard({
               <Button
                 variant="primary"
                 icon={Play}
-                disabled={!text.trim() || (mode === "clone" && !ownName.trim())}
+                disabled={!text.trim() || !ownName.trim()}
                 onClick={() => onStart(text)}
               >
                 Session starten

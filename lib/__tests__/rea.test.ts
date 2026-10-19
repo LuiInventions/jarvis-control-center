@@ -14,28 +14,36 @@ import { sessionInLauncher, sessionPlace } from "../session-names";
 import { resolveSection } from "../server/mcp/sections";
 
 describe("rea prompts", () => {
-  it("keeps the install request and the three REA tools", () => {
+  it("keeps the install request and asks to check MCP or the plugin", () => {
     expect(REA_SETUP_PROMPT).toContain("https://github.com/morluto/rea");
     expect(REA_SETUP_PROMPT).toContain("REA MCP server");
     expect(REA_SETUP_PROMPT).toContain("Hopper, Ghidra or IDA");
     expect(REA_SETUP_PROMPT).toContain("JavaScript/Electron apps and .NET assemblies");
+    expect(REA_SETUP_PROMPT).toContain("ob der mcp server oder das plugin schon installiert ist");
+    expect(REA_SETUP_PROMPT.toLowerCase()).not.toContain("grok");
+    expect(REA_SETUP_PROMPT.toLowerCase()).not.toContain("schon lokal");
   });
 
-  it("fills the program name and leaves [feature]", () => {
+  it("fills the program name and where the feature is built", () => {
     expect(FEATURE_PROMPT).toContain("{program name}");
+    expect(FEATURE_PROMPT).toContain("{name}");
     expect(FEATURE_PROMPT).toContain("[feature]");
-    const filled = fillFeaturePrompt("Notion");
+    const filled = fillFeaturePrompt("Notion", "My Notes");
     expect(filled).not.toContain("{program name}");
+    expect(filled).not.toContain("{name}");
     expect(filled).toContain("Target program: Notion");
+    expect(filled).toContain("Build the feature in My Notes");
     expect(filled).toContain("Understand how [feature] works in Notion");
+    expect(filled).toContain("build a similar feature in My Notes");
     expect(filled).toContain("Never bypass licensing, DRM, auth or paywalls");
   });
 
-  it("fills the target and the own project", () => {
-    expect(CLONE_PROMPT).toContain("{own project name}");
+  it("fills the target and the clone name", () => {
+    expect(CLONE_PROMPT).toContain("{name}");
+    expect(CLONE_PROMPT).not.toContain("{own project name}");
     const filled = fillClonePrompt("Notion", "My Notes");
     expect(filled).not.toContain("{program name}");
-    expect(filled).not.toContain("{own project name}");
+    expect(filled).not.toContain("{name}");
     expect(filled).toContain("Own project: My Notes");
     expect(filled).toContain("rebuild all of them as original code in My Notes");
     expect(filled).toContain("Do not copy decompiled code, assets, text, logos or branding");
