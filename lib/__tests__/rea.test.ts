@@ -1,3 +1,4 @@
+import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { describe, expect, it } from "vitest";
@@ -6,9 +7,11 @@ import { instanceDir, validateInstanceName } from "../rea-instance";
 import {
   CLONE_PROMPT,
   FEATURE_PROMPT,
+  OWN_PROMPT,
   REA_SETUP_PROMPT,
   fillClonePrompt,
   fillFeaturePrompt,
+  fillOwnPrompt,
 } from "../rea-prompts";
 import { sessionInLauncher, sessionPlace } from "../session-names";
 import { resolveSection } from "../server/mcp/sections";
@@ -48,6 +51,22 @@ describe("rea prompts", () => {
     expect(filled).toContain("rebuild all of them as original code in My Notes");
     expect(filled).toContain("Do not copy decompiled code, assets, text, logos or branding");
   });
+
+  it("fills only the role and the chosen program for a self-written prompt", () => {
+    expect(OWN_PROMPT).toContain("<role>");
+    expect(OWN_PROMPT).toContain("{program name}");
+    expect(OWN_PROMPT).not.toContain("{name}");
+    expect(OWN_PROMPT).not.toContain("<research_process>");
+    const filled = fillOwnPrompt("Discord");
+    expect(filled).toContain("You are an elite AI reverse engineering analyst");
+    expect(filled).toContain("Target program: Discord");
+    expect(filled).not.toContain("{program name}");
+    expect(filled).not.toContain("{name}");
+    expect(filled).not.toContain("[feature]");
+    expect(filled).not.toContain("<research_process>");
+    expect(filled.startsWith("<prompt>")).toBe(true);
+    expect(filled.trimEnd().endsWith("</prompt>")).toBe(true);
+  });
 });
 
 describe("rea instance folders", () => {
@@ -82,6 +101,60 @@ describe("rea app list", () => {
     const id = appIconId("C:\\Apps\\Notion.exe");
     expect(id).toMatch(/^[a-f0-9]{16}$/);
     expect(appIconId("c:\\apps\\notion.exe")).toBe(id);
+  });
+
+  it("keeps programs that have a name but no executable", () => {
+    const apps = normalizeListedApps([
+      { name: "Counter-Strike 2", exe: "" },
+      { name: "Spotify" },
+      { name: "WhatsApp", exe: "   " },
+      { name: "Security Update KB999", exe: "" },
+      { name: "unins000", exe: "" },
+    ]);
+    expect(apps.map((app) => app.name)).toEqual(["Counter-Strike 2", "Spotify", "WhatsApp"]);
+  });
+
+  it("prefers the installed exe over a start-menu name for the same program", () => {
+    const apps = normalizeListedApps([
+      { name: "Cursor", exe: "" },
+      { name: "Cursor (User)", exe: "C:\\Apps\\Cursor.exe" },
+      { name: "ARK Survival Ascended", exe: "" },
+      { name: "ARK: Survival Ascended", exe: "" },
+    ]);
+    expect(apps).toEqual([
+      { name: "ARK Survival Ascended", exe: "" },
+      { name: "Cursor (User)", exe: "C:\\Apps\\Cursor.exe" },
+    ]);
+  });
+
+  it("keeps x64 and x86 installs apart", () => {
+    const apps = normalizeListedApps([
+      { name: "Microsoft Visual C++ 2012 Redistributable (x64) - 11.0.61030", exe: "" },
+      { name: "Microsoft Visual C++ 2012 Redistributable (x86) - 11.0.61030", exe: "" },
+    ]);
+    expect(apps.map((app) => app.name)).toEqual([
+      "Microsoft Visual C++ 2012 Redistributable (x64) - 11.0.61030",
+      "Microsoft Visual C++ 2012 Redistributable (x86) - 11.0.61030",
+    ]);
+  });
+
+  it("gives name-only programs distinct icon ids", () => {
+    const spotify = appIconId("", "Spotify");
+    const whatsapp = appIconId("", "WhatsApp");
+    expect(spotify).toMatch(/^[a-f0-9]{16}$/);
+    expect(whatsapp).toMatch(/^[a-f0-9]{16}$/);
+    expect(spotify).not.toBe(whatsapp);
+  });
+});
+
+describe("rea desktop scan", () => {
+  const scan = fs.readFileSync(path.join(__dirname, "../server/rea-scan.ts"), "utf8");
+
+  it("lists start-menu and store apps by name and does not stop at 2000", () => {
+    expect(scan).toContain("Get-StartApps");
+    expect(scan).toContain("Add-Name");
+    expect(scan).not.toContain("$apps.Count -ge");
+    expect(scan).toContain("CACHE_VERSION");
   });
 });
 

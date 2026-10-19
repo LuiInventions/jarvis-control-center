@@ -5,7 +5,7 @@ import { createPortal } from "react-dom";
 import { Copy, Loader2, Play, RefreshCw, X } from "lucide-react";
 import { Button, cn } from "../ui";
 import { copyText } from "../term-copy";
-import { fillClonePrompt, fillFeaturePrompt } from "@/lib/rea-prompts";
+import { fillClonePrompt, fillFeaturePrompt, fillOwnPrompt } from "@/lib/rea-prompts";
 
 interface DesktopApp {
   id: string;
@@ -15,7 +15,7 @@ interface DesktopApp {
 }
 
 type Step = "apps" | "mode" | "name" | "prompt";
-type Mode = "feature" | "clone";
+type Mode = "feature" | "clone" | "own";
 
 export default function ReaWizard({
   onClose,
@@ -30,6 +30,7 @@ export default function ReaWizard({
   const [error, setError] = useState<string | null>(null);
   const [query, setQuery] = useState("");
   const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [manualName, setManualName] = useState("");
   const [mode, setMode] = useState<Mode>("feature");
   const [ownName, setOwnName] = useState("");
   const [text, setText] = useState("");
@@ -37,6 +38,7 @@ export default function ReaWizard({
   const [reload, setReload] = useState(0);
 
   const selected = apps.find((app) => app.id === selectedId) ?? null;
+  const programName = manualName.trim();
 
   useEffect(() => {
     let stop = false;
@@ -77,23 +79,37 @@ export default function ReaWizard({
     );
   }, [apps, query]);
 
+  const pickApp = (app: DesktopApp) => {
+    setSelectedId(app.id);
+    setManualName(app.name);
+  };
+
   const chooseMode = (next: Mode) => {
-    if (!selected) return;
+    const program = manualName.trim();
+    if (!program) return;
+    setManualName(program);
     setMode(next);
     setCopied(false);
+    if (next === "own") {
+      setText(fillOwnPrompt(program));
+      setStep("prompt");
+      return;
+    }
     setStep("name");
   };
 
   const filled = (next: Mode, name: string) => {
-    if (!selected) return;
-    setText(
-      next === "feature" ? fillFeaturePrompt(selected.name, name) : fillClonePrompt(selected.name, name),
-    );
+    if (!programName) return;
+    if (next === "own") {
+      setText(fillOwnPrompt(programName));
+      return;
+    }
+    setText(next === "feature" ? fillFeaturePrompt(programName, name) : fillClonePrompt(programName, name));
   };
 
   const confirmName = () => {
     const own = ownName.trim();
-    if (!selected || !own) return;
+    if (!programName || !own || mode === "own") return;
     setOwnName(own);
     filled(mode, own);
     setCopied(false);
@@ -131,7 +147,10 @@ export default function ReaWizard({
         role="dialog"
         aria-modal="true"
         aria-labelledby="rea-wizard-title"
-        className="flex max-h-[92vh] w-full max-w-5xl flex-col overflow-hidden rounded-2xl border border-line bg-surface shadow-[0_24px_60px_rgba(0,0,0,0.45)]"
+        className={cn(
+          "flex w-full max-w-5xl flex-col overflow-hidden rounded-2xl border border-line bg-surface shadow-[0_24px_60px_rgba(0,0,0,0.45)]",
+          step === "apps" || step === "prompt" ? "h-[92vh] max-h-[92vh]" : "max-h-[92vh]",
+        )}
         onMouseDown={(event) => event.stopPropagation()}
       >
         <div className="flex items-start justify-between gap-3 border-b border-line px-5 py-4">
@@ -141,9 +160,9 @@ export default function ReaWizard({
             </h2>
             <p className="mt-1 text-xs text-muted">
               {step === "apps"
-                ? "Installierte Programme, Startmenü und Electron-Apps."
+                ? "Alle Programme auf diesem PC. Den Namen kannst du auch selbst eintragen."
                 : step === "mode"
-                  ? selected?.name
+                  ? programName
                   : step === "name"
                     ? mode === "feature"
                       ? "Name des Projekts, in das die Funktion eingebaut wird."
@@ -169,6 +188,18 @@ export default function ReaWizard({
                 onChange={(event) => setQuery(event.target.value)}
                 placeholder="Suchen"
                 aria-label="Programm suchen"
+                spellCheck={false}
+                className="h-9 min-w-0 flex-1 rounded-lg border border-transparent bg-raised/80 px-2.5 text-sm text-ink outline-none"
+              />
+              <input
+                value={manualName}
+                onChange={(event) => {
+                  const next = event.target.value;
+                  setManualName(next);
+                  if (selected && next.trim() !== selected.name) setSelectedId(null);
+                }}
+                placeholder="Softwarename manuell"
+                aria-label="Softwarename"
                 spellCheck={false}
                 className="h-9 min-w-0 flex-1 rounded-lg border border-transparent bg-raised/80 px-2.5 text-sm text-ink outline-none"
               />
@@ -200,9 +231,9 @@ export default function ReaWizard({
                       type="button"
                       aria-pressed={app.id === selectedId}
                       title={app.exe}
-                      onClick={() => setSelectedId(app.id)}
+                      onClick={() => pickApp(app)}
                       onDoubleClick={() => {
-                        setSelectedId(app.id);
+                        pickApp(app);
                         setStep("mode");
                       }}
                       className={cn(
@@ -223,7 +254,7 @@ export default function ReaWizard({
               <Button variant="secondary" onClick={onClose}>
                 Schließen
               </Button>
-              <Button variant="primary" disabled={!selected} onClick={() => setStep("mode")}>
+              <Button variant="primary" disabled={!programName} onClick={() => setStep("mode")}>
                 Weiter
               </Button>
             </div>
@@ -239,7 +270,7 @@ export default function ReaWizard({
             >
               <div className="text-sm font-medium text-ink">Features kopieren</div>
               <p className="mt-1 text-xs leading-relaxed text-muted">
-                Eine Funktion von {selected?.name} nachvollziehen. Danach den Namen des Zielprojekts eingeben.
+                Eine Funktion von {programName} nachvollziehen. Danach den Namen des Zielprojekts eingeben.
               </p>
             </button>
             <button
@@ -250,6 +281,16 @@ export default function ReaWizard({
               <div className="text-sm font-medium text-ink">Ganze App kopieren</div>
               <p className="mt-1 text-xs leading-relaxed text-muted">
                 Alle Funktionen als eigenen Klon nachbauen. Danach den Namen des Klons eingeben.
+              </p>
+            </button>
+            <button
+              type="button"
+              onClick={() => chooseMode("own")}
+              className="cursor-pointer rounded-xl border border-line bg-raised/70 px-4 py-4 text-left hover:border-accent"
+            >
+              <div className="text-sm font-medium text-ink">Selber prompten</div>
+              <p className="mt-1 text-xs leading-relaxed text-muted">
+                Nur die Rolle des Agenten und {programName} werden eingesetzt. Den Prompt schreibst du selbst.
               </p>
             </button>
             <div className="flex justify-end">
@@ -290,20 +331,24 @@ export default function ReaWizard({
 
         {step === "prompt" && (
           <div className="flex min-h-0 flex-1 flex-col gap-3 px-5 py-4">
-            <label className="flex flex-col gap-1.5">
-              <span className="text-xs text-muted">{nameLabel}</span>
-              <input
-                value={ownName}
-                onChange={(event) => retarget(event.target.value)}
-                aria-label={nameLabel}
-                spellCheck={false}
-                className="h-9 rounded-lg border border-transparent bg-raised/80 px-2.5 text-sm text-ink outline-none"
-              />
-            </label>
+            {mode !== "own" && (
+              <label className="flex flex-col gap-1.5">
+                <span className="text-xs text-muted">{nameLabel}</span>
+                <input
+                  value={ownName}
+                  onChange={(event) => retarget(event.target.value)}
+                  aria-label={nameLabel}
+                  spellCheck={false}
+                  className="h-9 rounded-lg border border-transparent bg-raised/80 px-2.5 text-sm text-ink outline-none"
+                />
+              </label>
+            )}
             <p className="text-xs text-muted">
               {mode === "feature"
                 ? "[feature] im Text durch die gewünschte Funktion ersetzen."
-                : "Der Text folgt dem Namen des Klons."}
+                : mode === "clone"
+                  ? "Der Text folgt dem Namen des Klons."
+                  : "Rolle und Programmname sind eingesetzt. Den weiteren Prompt schreibst du selbst."}
             </p>
             <textarea
               value={text}
@@ -313,10 +358,10 @@ export default function ReaWizard({
               }}
               aria-label="REA Prompt"
               spellCheck={false}
-              className="min-h-64 w-full flex-1 resize-none rounded-lg border border-transparent bg-raised/80 p-3 font-mono text-[12px] leading-relaxed text-ink outline-none"
+              className="min-h-0 w-full flex-1 resize-none rounded-lg border border-transparent bg-raised/80 p-3 font-mono text-[12px] leading-relaxed text-ink outline-none"
             />
             <div className="flex flex-wrap justify-end gap-2">
-              <Button variant="secondary" onClick={() => setStep("name")}>
+              <Button variant="secondary" onClick={() => setStep(mode === "own" ? "mode" : "name")}>
                 Zurück
               </Button>
               <Button variant="secondary" icon={Copy} onClick={() => void copy()} disabled={!text.trim()}>
@@ -328,7 +373,7 @@ export default function ReaWizard({
               <Button
                 variant="primary"
                 icon={Play}
-                disabled={!text.trim() || !ownName.trim()}
+                disabled={!text.trim() || (mode !== "own" && !ownName.trim())}
                 onClick={() => onStart(text)}
               >
                 Session starten

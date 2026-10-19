@@ -19,13 +19,16 @@
 </p>
 
 > [!TIP]
-> **v1.9.27** is the current release. The sidebar order is **Jarvis**, **Remote**,
+> **v1.9.28** is the current release. The sidebar order is **Jarvis**, **Remote**,
 > **GitHub**, **Local**, **REA**, **Repos**, **Sessions**. **REA** opens Reverse
 > Engineer Anything in its own workspace: create an instance or enter a path,
 > copy the setup text, and start a session there. The setup text asks the session
 > to check whether the MCP server or the plugin is already installed. **REA starten**
-> lists installed programs with icons, then asks for a feature or the whole app,
-> then for the clone name or the project the feature is built into. Those sessions stay
+> lists every program on this PC, including Start menu and Store apps, and a software
+> name can be typed next to that list. The next step is a feature, the whole app, or
+> **Selber prompten**. Selber prompten fills only the agent role and the program name.
+> A feature or the whole app then asks for the clone name or the project the feature
+> is built into. The prompt opens in a tall editor. Those sessions stay
 > on the REA tab. Jarvis is a chat with GPT 6 Luna
 > at low reasoning effort. The OpenAI key is entered in that tab. The reply shows
 > each tool call, and a panel on the right shows what the local MCP server answered.
@@ -39,7 +42,7 @@
 > write into the folder on this PC. **Repos → New repo** creates the repository
 > in the clones folder. That path is fixed. **Repos → Update** commits local
 > changes, merges what GitHub gained, and pushes.
-> The installer is `jarvis-control-center-Setup-1.9.27.exe`. v1.8.0 was withdrawn.
+> The installer is `jarvis-control-center-Setup-1.9.28.exe`. v1.8.0 was withdrawn.
 > v1.9.6 has no installer. [**Changelog**](CHANGELOG.md)
 
 <img width="1920" height="1080" alt="Jarvis Control Center" src="https://github.com/user-attachments/assets/961f27e3-c90e-4594-bbbc-ce2fa462e56b" />

@@ -311,6 +311,17 @@ function fillToken(template: string, token: string, value: string): string {
   return template.replaceAll(`{${token}}`, next);
 }
 
+/** Role and target program only. The user writes the rest. `{program name}` is filled. */
+export const OWN_PROMPT = `<prompt>
+<role>
+You are an elite AI reverse engineering analyst combining binary analysis, application architecture, runtime observation and product engineering. You have access to REA (Reverse Engineer Anything) through MCP, can inspect native binaries, JavaScript/Electron apps, .NET assemblies, Android APKs and websites, and can write and test code. You are evidence-driven, skeptical of guesses, and focused on rebuilding features that actually work.
+</role>
+
+<objective>
+Target program: {program name}
+</objective>
+</prompt>`;
+
 /** Fill the program name and where the feature is built. `[feature]` stays. */
 export function fillFeaturePrompt(programName: string, destinationName: string): string {
   return fillToken(fillToken(FEATURE_PROMPT, "program name", programName), "name", destinationName);
@@ -319,4 +330,9 @@ export function fillFeaturePrompt(programName: string, destinationName: string):
 /** Fill the target program and the clone name in `{name}`. */
 export function fillClonePrompt(programName: string, cloneName: string): string {
   return fillToken(fillToken(CLONE_PROMPT, "program name", programName), "name", cloneName);
+}
+
+/** Fill only the chosen program. The role stays as written. */
+export function fillOwnPrompt(programName: string): string {
+  return fillToken(OWN_PROMPT, "program name", programName);
 }

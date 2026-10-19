@@ -8,6 +8,7 @@ import { appIconId, normalizeListedApps } from "../rea-apps";
 
 const pexec = promisify(execFile);
 const TTL_MS = 10 * 60 * 1000;
+const CACHE_VERSION = 3;
 
 export interface DesktopApp {
   id: string;
@@ -18,6 +19,7 @@ export interface DesktopApp {
 }
 
 interface CacheFile {
+  version: number;
   scannedAt: number;
   apps: { id: string; name: string; exe: string }[];
 }
@@ -29,8 +31,16 @@ $ProgressPreference = 'SilentlyContinue'
 $apps = New-Object System.Collections.Generic.List[object]
 $seen = @{}
 
+function Add-Name([string]$name) {
+  if ([string]::IsNullOrWhiteSpace($name)) { return }
+  $name = $name.Trim()
+  $key = 'name:' + $name.ToLowerInvariant()
+  if ($seen.ContainsKey($key)) { return }
+  $seen[$key] = $true
+  $apps.Add([pscustomobject]@{ name = $name; exe = '' })
+}
+
 function Add-App([string]$name, [string]$exe) {
-  if ($apps.Count -ge 2000) { return }
   if ([string]::IsNullOrWhiteSpace($exe)) { return }
   $exe = $exe.Trim().Trim('"')
   $m = [regex]::Match($exe, '(?i)^(.*\\.exe)')
@@ -84,6 +94,7 @@ foreach ($pattern in $reg) {
       }
     }
     if ($exe) { Add-App $display $exe }
+    Add-Name $display
   }
 }
 
@@ -101,6 +112,7 @@ if ($shell) {
         $sc = $shell.CreateShortcut($_.FullName)
         $target = [string]$sc.TargetPath
         if ($target -and $target.ToLowerInvariant().EndsWith('.exe')) { Add-App $_.BaseName $target }
+        Add-Name $_.BaseName
       } catch {}
     }
   }
@@ -128,12 +140,30 @@ if ($env:LOCALAPPDATA -and (Test-Path -LiteralPath $env:LOCALAPPDATA)) {
 Add-ElectronRoot $env:ProgramFiles 3
 $pf86 = [Environment]::GetEnvironmentVariable('ProgramFiles(x86)')
 if ($pf86) { Add-ElectronRoot $pf86 2 }
-$desk = [Environment]::GetFolderPath('Desktop')
-if ($desk -and (Test-Path -LiteralPath $desk)) {
+$desks = @(
+  [Environment]::GetFolderPath('Desktop'),
+  [Environment]::GetFolderPath('CommonDesktopDirectory')
+)
+foreach ($desk in $desks) {
+  if (-not $desk -or -not (Test-Path -LiteralPath $desk)) { continue }
   Get-ChildItem -LiteralPath $desk -Filter *.exe -File -ErrorAction SilentlyContinue | ForEach-Object {
     Add-App $_.BaseName $_.FullName
   }
+  if ($shell) {
+    Get-ChildItem -LiteralPath $desk -Filter *.lnk -File -ErrorAction SilentlyContinue | ForEach-Object {
+      try {
+        $sc = $shell.CreateShortcut($_.FullName)
+        $target = [string]$sc.TargetPath
+        if ($target -and $target.ToLowerInvariant().EndsWith('.exe')) { Add-App $_.BaseName $target }
+        Add-Name $_.BaseName
+      } catch {}
+    }
+  }
 }
+
+try {
+  Get-StartApps | ForEach-Object { Add-Name ([string]$_.Name) }
+} catch {}
 
 $utf8 = New-Object System.Text.UTF8Encoding $false
 $writer = New-Object System.IO.StreamWriter($OutFile, $false, $utf8)
@@ -203,7 +233,7 @@ function withIcons(apps: { id: string; name: string; exe: string }[]): DesktopAp
 function readDiskCache(): CacheFile | null {
   try {
     const parsed = JSON.parse(fs.readFileSync(cachePath(), "utf8")) as CacheFile;
-    if (!parsed || !Array.isArray(parsed.apps) || typeof parsed.scannedAt !== "number") return null;
+    if (!parsed || parsed.version !== CACHE_VERSION || !Array.isArray(parsed.apps) || typeof parsed.scannedAt !== "number") return null;
     return parsed;
   } catch {
     return null;
@@ -227,7 +257,7 @@ async function runPowerShell(script: string, args: string[], timeout: number): P
 async function extractIcons(apps: { id: string; name: string; exe: string }[]): Promise<void> {
   const dir = iconDir();
   await fs.promises.mkdir(dir, { recursive: true });
-  const missing = apps.filter((app) => !fs.existsSync(iconFile(app.id)));
+  const missing = apps.filter((app) => app.exe && !fs.existsSync(iconFile(app.id)));
   if (missing.length === 0) return;
   const listFile = path.join(os.tmpdir(), `jarvis-rea-icons-${process.pid}.jsonl`);
   const body = missing.map((app) => JSON.stringify({ id: app.id, exe: app.exe })).join("\n");
@@ -267,18 +297,18 @@ async function scanDesktopApps(): Promise<DesktopApp[]> {
     }
   }
   const apps = normalizeListedApps(raw).map((app) => ({
-    id: appIconId(app.exe),
+    id: appIconId(app.exe, app.name),
     name: app.name,
     exe: app.exe,
   }));
   await extractIcons(apps).catch(() => {});
-  const cache: CacheFile = { scannedAt: Date.now(), apps };
+  const cache: CacheFile = { version: CACHE_VERSION, scannedAt: Date.now(), apps };
   await fs.promises.mkdir(getConfig().dataDir, { recursive: true });
   await fs.promises.writeFile(cachePath(), JSON.stringify(cache), "utf8");
   return withIcons(apps);
 }
 
-/** Installed programs, Start Menu targets, and Electron apps on this PC. */
+/** Installed programs, Start menu apps, Store apps, and Electron apps on this PC. */
 export async function listDesktopApps(refresh = false): Promise<DesktopApp[]> {
   if (!refresh && memory && Date.now() - memory.at < TTL_MS) return memory.apps;
   if (!refresh) {

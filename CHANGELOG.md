@@ -5,6 +5,15 @@ follow `package.json`. From 1.9.6 each `v*` tag publishes
 `jarvis-control-center-Setup-<version>.exe`. Earlier installers were named
 `cc-control-center-Setup-<version>.exe`.
 
+## 1.9.28 — 2026-10-19
+
+### REA
+
+- **REA starten** lists every program on this PC: installed programs, Start menu entries, and Microsoft Store apps. A program is shown by name even when it has no executable.
+- A software name can be typed next to the program list.
+- **Selber prompten** sits beside **Features kopieren** and **Ganze App kopieren**. It fills only the agent role and the chosen program name.
+- The prompt editor fills the window so the text can be read.
+
 ## 1.9.27 — 2026-10-19
 
 ### REA

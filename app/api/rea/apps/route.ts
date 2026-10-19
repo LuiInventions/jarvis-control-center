@@ -2,7 +2,7 @@ import { listDesktopApps } from "@/lib/server/rea-scan";
 
 export const dynamic = "force-dynamic";
 
-/** Installed programs, Start Menu apps, and Electron apps on this PC. */
+/** Installed programs, Start menu apps, Store apps, and Electron apps on this PC. */
 export async function GET(req: Request) {
   const refresh = new URL(req.url).searchParams.get("refresh") === "1";
   try {
