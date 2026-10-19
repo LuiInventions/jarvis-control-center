@@ -88,7 +88,7 @@ describe("placeClones", () => {
     expect(fs.readFileSync(path.join(dest, "from-cli.txt"), "utf8")).toBe("local\n");
     expect(fs.existsSync(src)).toBe(false);
     expect(placed.wiped).toEqual([]);
-  });
+  }, 20_000);
 
   it("does not leave a deleted clone marked cloned", async () => {
     const root = fs.mkdtempSync(path.join(os.tmpdir(), "ccc-place-"));

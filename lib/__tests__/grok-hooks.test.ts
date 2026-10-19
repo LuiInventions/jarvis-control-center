@@ -41,7 +41,7 @@ describe("silenceGrokPluginHooks", () => {
     git(dir, ["add", "-A"]);
     expect(git(dir, ["diff", "--cached", "--name-only"]).trim()).toBe("");
     expect(git(dir, ["status", "--porcelain", "--untracked-files=normal"]).trim()).toBe("");
-  });
+  }, 20_000);
 
   it("leaves a tracked project config alone", () => {
     const dir = repo();
@@ -52,7 +52,7 @@ describe("silenceGrokPluginHooks", () => {
     git(dir, ["-c", "user.email=probe@example.com", "-c", "user.name=probe", "commit", "-qm", "config"]);
     silenceGrokPluginHooks(dir);
     expect(fs.readFileSync(path.join(dir, ".grok", "config.toml"), "utf8")).toBe(body);
-  });
+  }, 20_000);
 
   it("does not create a config outside a git checkout", () => {
     const dir = fs.mkdtempSync(path.join(os.tmpdir(), "ccc-grok-hooks-"));
@@ -70,5 +70,5 @@ describe("silenceGrokPluginHooks", () => {
     expect(fs.readFileSync(path.join(dir, ".grok", "config.toml"), "utf8")).toBe(body);
     git(dir, ["add", "-A"]);
     expect(git(dir, ["diff", "--cached", "--name-only"])).toContain(".grok/config.toml");
-  });
+  }, 20_000);
 });

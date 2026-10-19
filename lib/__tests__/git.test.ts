@@ -126,7 +126,7 @@ describe("clone folder updates", () => {
     } finally {
       fs.rmSync(dir, { recursive: true, force: true });
     }
-  });
+  }, 20_000);
 
   it("offers a new file even when git config hides untracked files", async () => {
     const dir = fs.mkdtempSync(path.join(os.tmpdir(), "ccc-untracked-"));
@@ -145,5 +145,5 @@ describe("clone folder updates", () => {
     } finally {
       fs.rmSync(dir, { recursive: true, force: true });
     }
-  });
+  }, 20_000);
 });

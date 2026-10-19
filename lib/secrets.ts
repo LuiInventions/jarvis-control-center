@@ -45,11 +45,14 @@ declare global {
 }
 
 /** Plaintext, gitignored, DEV-ONLY fallback so setup works under `npm run dev`. */
-const DEV_FILE = path.join(process.cwd(), ".data", "secrets.json");
+function devFile(): string {
+  const override = process.env.CCC_SECRETS_FILE?.trim();
+  return override || path.join(process.cwd(), ".data", "secrets.json");
+}
 
 function readDevStore(): Secrets {
   try {
-    const raw = fs.readFileSync(DEV_FILE, "utf8");
+    const raw = fs.readFileSync(devFile(), "utf8");
     const p = JSON.parse(raw);
     return p && typeof p === "object" ? (p as Secrets) : {};
   } catch {
@@ -58,10 +61,11 @@ function readDevStore(): Secrets {
 }
 
 function writeDevStore(s: Secrets): void {
-  fs.mkdirSync(path.dirname(DEV_FILE), { recursive: true });
-  const tmp = DEV_FILE + ".tmp";
+  const file = devFile();
+  fs.mkdirSync(path.dirname(file), { recursive: true });
+  const tmp = file + ".tmp";
   fs.writeFileSync(tmp, JSON.stringify(s, null, 2), "utf8");
-  fs.renameSync(tmp, DEV_FILE);
+  fs.renameSync(tmp, file);
 }
 
 /** Migrate the legacy `openaiApiKey` field into `providerKeys.openai`. */

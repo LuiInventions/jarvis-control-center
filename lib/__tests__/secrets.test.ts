@@ -1,11 +1,14 @@
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import fs from "node:fs";
+import os from "node:os";
 import path from "node:path";
 import { readSecrets, writeSecrets, secretsStatus } from "../secrets";
 
-const DEV_FILE = path.join(process.cwd(), ".data", "secrets.json");
+const SHARED_FILE = path.join(process.cwd(), ".data", "secrets.json");
+const DEV_FILE = path.join(os.tmpdir(), `jarvis-secrets-test-${process.pid}.json`);
 
 function clearEnvAndStore() {
+  process.env.CCC_SECRETS_FILE = DEV_FILE;
   delete (globalThis as Record<string, unknown>).__ccc_secrets;
   delete process.env.OPENAI_API_KEY;
   delete process.env.GROQ_API_KEY;
@@ -74,6 +77,15 @@ describe("secrets layer (multi-provider)", () => {
     writeSecrets({ remoteSshPassword: "" });
     expect(readSecrets().remoteSshPassword).toBeUndefined();
     expect(secretsStatus().hasRemotePassword).toBe(false);
+  });
+
+  it("keeps the dev store off the shared secrets file when CCC_SECRETS_FILE is set", () => {
+    const before = fs.existsSync(SHARED_FILE) ? fs.readFileSync(SHARED_FILE, "utf8") : null;
+    writeSecrets({ remoteSshPasswords: { "ada@10.0.0.9": "pw-two" } });
+    expect(fs.existsSync(DEV_FILE)).toBe(true);
+    const after = fs.existsSync(SHARED_FILE) ? fs.readFileSync(SHARED_FILE, "utf8") : null;
+    expect(after).toBe(before);
+    expect(readSecrets().remoteSshPasswords?.["ada@10.0.0.9"]).toBe("pw-two");
   });
 
   it("keeps several remote passwords and never puts them in the status", () => {
