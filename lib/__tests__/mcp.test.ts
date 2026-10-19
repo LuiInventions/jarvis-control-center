@@ -27,6 +27,7 @@ afterEach(() => {
 describe("mcp sections", () => {
   it("maps sidebar names onto the window section ids", () => {
     expect(resolveSection("local")).toBe("launcher");
+    expect(resolveSection("rea")).toBe("rea");
     expect(resolveSection("github")).toBe("github-launch");
     expect(resolveSection("repos")).toBe("github");
     expect(resolveSection("settings")).toBe("settings");
@@ -141,7 +142,7 @@ describe("numbered sessions", () => {
     status: "running" | "done";
     startedAt: number;
     where?: "remote";
-    origin?: "github";
+    origin?: "github" | "rea";
     projectName: string;
   }) {
     const g = globalThis as { __claudePtySessions?: Map<string, unknown> };
@@ -181,12 +182,14 @@ describe("numbered sessions", () => {
     seed({ id: "gh-mid", buffer: "middle", status: "running", startedAt: 200, origin: "github", projectName: "mid" });
     seed({ id: "gh-done", buffer: "gone", status: "done", startedAt: 50, origin: "github", projectName: "done" });
     seed({ id: "local-1", buffer: "local", status: "running", startedAt: 150, projectName: "local" });
+    seed({ id: "rea-1", buffer: "rea", status: "running", startedAt: 160, origin: "rea", projectName: "rea" });
     seed({ id: "remote-1", buffer: "remote", status: "running", startedAt: 180, where: "remote", projectName: "remote" });
 
     const github = listActiveSessions("github").sessions;
     expect(github.map((row) => row.label)).toEqual(["session 1", "session 2", "session 3"]);
     expect(github.map((row) => row.id)).toEqual(["gh-old", "gh-mid", "gh-new"]);
     expect(listActiveSessions("local").sessions.map((row) => row.id)).toEqual(["local-1"]);
+    expect(listActiveSessions("rea").sessions.map((row) => row.id)).toEqual(["rea-1"]);
     expect(listActiveSessions("remote").sessions.map((row) => row.id)).toEqual(["remote-1"]);
 
     const info = sessionInfoByNumber("github", 1);
@@ -240,6 +243,7 @@ describe("mcp http", () => {
         "local_upload_images",
         "list_active_github_sessions",
         "list_active_local_sessions",
+        "list_active_rea_sessions",
         "list_active_remote_sessions",
         "get_session_x_info",
       ]) {

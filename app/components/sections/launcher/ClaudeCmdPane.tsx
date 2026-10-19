@@ -62,7 +62,7 @@ export default function ClaudeCmdPane({
   prompt: string;
   model: string;
   effort: string;
-  origin?: "github";
+  origin?: "github" | "rea";
   repoFullName?: string;
   /** `remote` starts the CLI over the shared ssh login instead of locally. */
   where?: "remote";

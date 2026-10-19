@@ -44,6 +44,7 @@ export default function OfficeView({ sessions }: { sessions: VisualSession[] }) 
   const openPlace = (place: SessionPlace) => {
     if (place === "github") navigate("github-launch");
     else if (place === "server") navigate("remote");
+    else if (place === "rea") navigate("rea");
     else navigate("launcher");
   };
 

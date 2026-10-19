@@ -64,6 +64,8 @@ export interface Settings {
    * Not a remote path.
    */
   launcherLocalPath?: string;
+  /** Folder of the REA tab. A new instance or a path the user already had. */
+  reaDir?: string;
   /** One of the built-in palettes. Missing means Ink. */
   theme?: ThemeId;
 }

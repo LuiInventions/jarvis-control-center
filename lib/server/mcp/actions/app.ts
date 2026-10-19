@@ -7,7 +7,7 @@ import { listPtySessions } from "../../claude-pty";
 import { remoteStatus } from "../../remote-session";
 import { enqueueUiCommand, uiSnapshot, type UiSectionId } from "../../ui-commands";
 import { mcpUrl } from "../endpoint";
-import { resolveSection, sectionGuide, SECTION_LABEL } from "../sections";
+import { resolveSection, sectionForOrigin, sectionGuide, SECTION_LABEL } from "../sections";
 import { ActionError } from "../errors";
 
 /** Where the app is, what it can do, and what is live right now. Call this first. */
@@ -43,6 +43,7 @@ export function appStatus() {
       projectsDir: pub.projectsDir,
       githubDir: pub.githubDir,
       launcherLocalPath: pub.launcherLocalPath || null,
+      reaDir: pub.reaDir || null,
     },
     github: {
       connected: github.connected,
@@ -113,10 +114,10 @@ export function showSession(opts: {
   where?: "remote";
   cwd: string;
   cli: string;
-  origin?: "github";
+  origin?: "github" | "rea";
   projectName: string;
 }): { section: UiSectionId; commandId: number } {
-  const section: UiSectionId = opts.where === "remote" ? "remote" : opts.origin === "github" ? "github-launch" : "launcher";
+  const section = sectionForOrigin(opts);
   const command = enqueueUiCommand(section, {
     kind: "attach-session",
     sessionId: opts.id,
@@ -132,10 +133,10 @@ export function showSession(opts: {
 /** One window command for a whole Start-button batch, so none of the panes is dropped. */
 export function showSessions(opts: {
   where?: "remote";
-  origin?: "github";
+  origin?: "github" | "rea";
   sessions: { id: string; cwd: string; cli: string; projectName: string; prompt: string }[];
 }): { section: UiSectionId; commandId: number } {
-  const section: UiSectionId = opts.where === "remote" ? "remote" : opts.origin === "github" ? "github-launch" : "launcher";
+  const section = sectionForOrigin(opts);
   const command = enqueueUiCommand(section, {
     kind: "attach-sessions",
     sessions: opts.sessions.map((row) => ({

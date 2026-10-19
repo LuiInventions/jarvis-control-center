@@ -19,6 +19,7 @@ describe("session names", () => {
   it("reads github, local, and server from the session", () => {
     expect(sessionPlace({ origin: "github" })).toBe("github");
     expect(sessionPlace({ where: "remote", origin: "github" })).toBe("server");
+    expect(sessionPlace({ origin: "rea" })).toBe("rea");
     expect(sessionPlace({})).toBe("local");
   });
 });

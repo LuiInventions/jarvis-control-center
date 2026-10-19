@@ -15,6 +15,7 @@ const SECTIONS = new Set<UiSectionId>([
   "github",
   "sessions",
   "jarvis",
+  "rea",
   "settings",
 ]);
 

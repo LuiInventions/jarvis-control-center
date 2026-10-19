@@ -35,6 +35,7 @@ export interface SettingsPatch {
   cartesiaVoice?: string;
   codeCli?: string;
   launcherLocalPath?: string;
+  reaDir?: string;
   theme?: string;
   setupComplete?: boolean;
 }
@@ -49,6 +50,7 @@ export function settingsUpdate(patch: SettingsPatch) {
     codeCli?: CodeCliId;
     setupVersion?: string;
     launcherLocalPath?: string;
+    reaDir?: string;
     theme?: ThemeId;
   } = {};
 
@@ -65,6 +67,11 @@ export function settingsUpdate(patch: SettingsPatch) {
     const dir = patch.launcherLocalPath.trim();
     if (dir && !existsSync(dir)) throw new ActionError(`Folder does not exist: ${dir}`);
     next.launcherLocalPath = dir;
+  }
+  if (typeof patch.reaDir === "string") {
+    const dir = patch.reaDir.trim();
+    if (dir && !existsSync(dir)) throw new ActionError(`Folder does not exist: ${dir}`);
+    next.reaDir = dir;
   }
   if (typeof patch.theme === "string") {
     if (!isThemeId(patch.theme)) {

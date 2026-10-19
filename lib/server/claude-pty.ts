@@ -57,7 +57,7 @@ export interface PtyMeta {
   cli: CodeCliId;
   /** Set when the CLI runs over ssh on the user's server. */
   where?: "remote";
-  origin?: "github";
+  origin?: "github" | "rea";
   repoFullName?: string;
   projectName: string;
   batchId: string;
@@ -232,7 +232,7 @@ export interface OpenPtyInput {
   effort?: string | null;
   cols?: number;
   rows?: number;
-  origin?: "github";
+  origin?: "github" | "rea";
   repoFullName?: string;
   projectName?: string;
   batchId?: string;
@@ -267,7 +267,7 @@ export function openPtySession(input: OpenPtyInput): OpenPtyResult {
   const effort = normalizeCliOption(cli, "effort", input.effort);
   const cols = Number(input.cols) || 80;
   const rows = Number(input.rows) || 24;
-  const origin = input.origin === "github" ? "github" : undefined;
+  const origin = input.origin === "github" || input.origin === "rea" ? input.origin : undefined;
   const repoFullName = input.repoFullName;
   const projectName = input.projectName ?? "";
   const batchId = input.batchId ?? "";
@@ -474,7 +474,10 @@ export function handleClaudePty(ws: WebSocket, url: URL): void {
     effort: url.searchParams.get("effort"),
     cols: Number(url.searchParams.get("cols")) || 80,
     rows: Number(url.searchParams.get("rows")) || 24,
-    origin: url.searchParams.get("origin") === "github" ? "github" : undefined,
+    origin: (() => {
+      const value = url.searchParams.get("origin");
+      return value === "github" || value === "rea" ? value : undefined;
+    })(),
     repoFullName: url.searchParams.get("repoFullName") ?? undefined,
     projectName: url.searchParams.get("projectName") ?? "",
     batchId: url.searchParams.get("batchId") ?? "",

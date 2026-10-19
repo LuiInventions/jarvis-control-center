@@ -72,7 +72,7 @@ export const MCP_INSTRUCTIONS = `You control Jarvis Control Center, the local Wi
 
 Call app_status first. Use ids, paths, and repo names from tool results. Do not invent them.
 
-Sections for app_navigate: remote, github (start a CLI in a clone), local (start a CLI in a folder on this PC), repos (token, clones, commit and push), sessions, settings.
+Sections for app_navigate: remote, github (start a CLI in a clone), local (start a CLI in a folder on this PC), rea (Reverse Engineer Anything in its own folder), repos (token, clones, commit and push), sessions, settings.
 
 Remote: remote_saved_servers, then remote_start_saved. A new host uses remote_connect. remote_submit_password answers the password prompt (useSaved true when the server stored one). remote_submit_otp answers 2FA. remote_set_dir chooses the remote folder. remote_session_start opens 1 to 6 sessions there. remote_search, remote_read_file, remote_write_file (editor save), remote_download (save a file or folder onto this PC), remote_copy_path, remote_upload, and remote_upload_images.
 
@@ -80,11 +80,13 @@ GitHub launcher: github_cloned_repos, github_select_repo, then github_session_st
 
 Local: local_get_path, local_select_path, local_session_start (1 to 6). local_search, local_read_file, local_save_file, local_copy_path, local_upload, and local_upload_images stay inside that folder. local_set_projects_dir changes the Settings projects folder, not the selected Ordner.
 
+REA: app_navigate section rea opens the REA tab. Sessions started there use origin rea. list_active_rea_sessions numbers them. get_session_x_info where rea reads one.
+
 Repos: github_status lists the signed-in user's repos. github_create_repo creates one by name. github_refresh re-lists them. github_update_repo commits and pushes local changes only when confirm is true. github_set_visibility sets private or public.
 
 A session keeps running until session_stop. session_send writes a follow-up and waits. session_read returns the readable tail. session_write is for raw keys such as Ctrl+C (\\u0003). Local and GitHub sessions use the code CLI from Settings. Remote sessions need SSH and take their own cli.
 
-Running sessions are numbered separately for each area, oldest first. list_active_github_sessions, list_active_local_sessions, and list_active_remote_sessions return session 1, session 2, and so on. get_session_x_info reads that session's command-window scrollback and copies it. where is github, local, or remote. x is the number from that area's list. A session that has exited is not in these lists.
+Running sessions are numbered separately for each area, oldest first. list_active_github_sessions, list_active_local_sessions, list_active_rea_sessions, and list_active_remote_sessions return session 1, session 2, and so on. get_session_x_info reads that session's command-window scrollback and copies it. where is github, local, rea, or remote. x is the number from that area's list. A session that has exited is not in these lists.
 
 github_connect, secrets_set, remote_submit_password, and remote_submit_otp store or send secrets. Their results never include the secret. Do not repeat a token, key, password, or 2FA code in your reply.
 
@@ -111,7 +113,7 @@ async function run(fn: () => Promise<unknown> | unknown): Promise<ToolResult> {
 }
 
 const section = z.enum(SECTION_ARG).describe(
-  "Sidebar entry. remote, github (GitHub launcher), local, repos (token and push), sessions, settings.",
+  "Sidebar entry. remote, github (GitHub launcher), local, rea, repos (token and push), sessions, settings.",
 );
 
 /**
@@ -173,10 +175,11 @@ export function createJarvisMcpServer(): McpServer {
     {
       title: "Update settings",
       description:
-        "Change settings. Omitted fields stay as they are. projectsDir and launcherLocalPath must already exist. codeCli is claude, grok, or codex and becomes the CLI that local session_start launches. theme is ink, dusk, moss, tide, clay, or plum. setupComplete true also requires projectsDir and marks first-run setup done for this version. Returns the public settings.",
+        "Change settings. Omitted fields stay as they are. projectsDir, launcherLocalPath, and reaDir must already exist. codeCli is claude, grok, or codex and becomes the CLI that local session_start launches. theme is ink, dusk, moss, tide, clay, or plum. setupComplete true also requires projectsDir and marks first-run setup done for this version. Returns the public settings.",
       inputSchema: {
         projectsDir: z.string().optional().describe("Absolute folder whose children are local projects."),
         launcherLocalPath: z.string().optional().describe("Last local folder selected in the Local tab."),
+        reaDir: z.string().optional().describe("Folder selected in the REA tab. Must already exist."),
         aiProvider: z.string().optional().describe("Provider id from settings_get, such as openai."),
         aiModel: z.string().optional().describe("Model id for the active provider."),
         openaiModel: z.string().optional().describe("Legacy OpenAI model id."),
@@ -279,7 +282,7 @@ export function createJarvisMcpServer(): McpServer {
         cli: z.enum(["claude", "grok", "codex"]).optional().describe("Remote CLI. Ignored locally; change Settings instead."),
         model: z.string().optional().describe("Model flag value from app_status.codeClis."),
         effort: z.string().optional().describe("Effort flag value from app_status.codeClis."),
-        origin: z.enum(["github", "local"]).optional().describe("github shows the session on the GitHub tab."),
+        origin: z.enum(["github", "local", "rea"]).optional().describe("github shows the session on the GitHub tab. rea shows it on the REA tab."),
         repoFullName: z.string().optional().describe("owner/repo when origin is github."),
         projectName: z.string().optional().describe("Label. Defaults to the folder name."),
         cols: z.number().int().min(20).max(400).optional().describe("Columns. Default 100. The window refits later."),

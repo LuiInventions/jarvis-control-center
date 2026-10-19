@@ -30,7 +30,9 @@ import UsageBar from "./launcher/UsageBar";
 import { useSpeak } from "../use-speak";
 import Markdown from "../Markdown";
 import type { UsageState } from "@/lib/usage-store";
+import { sessionInLauncher } from "@/lib/session-names";
 import { numberInstances, type WindowInstance } from "@/lib/window-instances";
+import ReaWizard from "./ReaWizard";
 
 interface ProjectOpt {
   name: string;
@@ -56,7 +58,7 @@ interface CmdInfo {
   prompt: string;
   model: string;
   effort: string;
-  origin?: "github";
+  origin?: "github" | "rea";
   repoFullName?: string;
   where?: "remote";
   cli?: string;
@@ -108,20 +110,28 @@ function gridShape(n: number): { cols: number; rows: number } {
 export default function LauncherSection({
   command,
   sourceLock,
+  initialPath = "",
+  onSwitchInstance,
 }: {
   command?: SectionCommand | null;
-  sourceLock: "local" | "github";
+  sourceLock: "local" | "github" | "rea";
+  /** REA opens on this folder. Local and GitHub ignore it. */
+  initialPath?: string;
+  /** REA only. Returns to the instance chooser. */
+  onSwitchInstance?: () => void;
 }) {
   const source = sourceLock;
   const [projects, setProjects] = useState<ProjectOpt[]>([]);
   const [githubProjects, setGithubProjects] = useState<ProjectOpt[]>([]);
   const [githubConnected, setGithubConnected] = useState(false);
   const [githubRestoring, setGithubRestoring] = useState(false);
-  const [projectPath, setProjectPath] = useState("");
+  const [projectPath, setProjectPath] = useState(initialPath);
   const [uploadOpen, setUploadOpen] = useState(false);
   const [imageOpen, setImageOpen] = useState(false);
   const [filesNonce, setFilesNonce] = useState(0);
   const localPathRef = useRef("");
+  const [reaOpen, setReaOpen] = useState(false);
+  const openRef = useRef<(cwd: string, prompts: string[]) => void>(() => {});
   const [pathMode, setPathMode] = useState<"list" | "manual">("list");
   const [raw, setRaw] = useState("");
   const [improved, setImproved] = useState("");
@@ -204,15 +214,17 @@ export default function LauncherSection({
             codeCli?: string;
             codeClis?: CodeCliOpt[];
             launcherLocalPath?: string;
+            reaDir?: string;
             projectsDir?: string;
           }) => {
             if (cancelled) return;
             setHasAiKey(Boolean(c.hasAiKey));
             if (c.launcherLocalPath) localPathRef.current = c.launcherLocalPath;
             // Local starts in the projects folder from Settings. A folder the
-            // user already picked in this visit stays put.
-            const folder = (c.projectsDir || "").trim();
-            if (source === "local" && folder) {
+            // user already picked in this visit stays put. REA uses its own folder.
+            const rawFolder = source === "rea" ? c.reaDir : c.projectsDir;
+            const folder = (rawFolder || "").trim();
+            if ((source === "local" || source === "rea") && folder) {
               setProjectPath((prev) => prev || folder);
             }
             const list = c.codeClis ?? [];
@@ -250,6 +262,19 @@ export default function LauncherSection({
         method: "POST",
         headers: { "content-type": "application/json" },
         body: JSON.stringify({ launcherLocalPath: projectPath }),
+      });
+    }, 400);
+    return () => clearTimeout(t);
+  }, [source, projectPath]);
+
+  // The REA tab remembers its own folder, separate from Local.
+  useEffect(() => {
+    if (source !== "rea" || !projectPath) return;
+    const t = setTimeout(() => {
+      void fetch("/api/settings", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ reaDir: projectPath }),
       });
     }, 400);
     return () => clearTimeout(t);
@@ -322,14 +347,14 @@ export default function LauncherSection({
           prompt: string;
           model: string;
           effort: string;
-          origin?: "github";
+          origin?: "github" | "rea";
           repoFullName?: string;
           where?: "remote";
           status: "running" | "done" | "error";
         }>;
         const mine = live.filter((s) => {
           if (s.where === "remote") return false;
-          return sourceLock === "github" ? s.origin === "github" : s.origin !== "github";
+          return sessionInLauncher(sourceLock, s.origin);
         });
         if (!mine.length) return;
         // Server lists newest-first; assign descending creation keys so the
@@ -352,7 +377,11 @@ export default function LauncherSection({
             repoFullName: s.repoFullName,
           },
         }));
-        setSessions(rebuilt);
+        setSessions((prev) => {
+          const known = new Set(prev.map((row) => row.id));
+          const fresh = rebuilt.filter((row) => !known.has(row.id));
+          return fresh.length ? [...fresh, ...prev] : prev;
+        });
         setSelectedId(rebuilt[0].id);
         setSidebarOpen(false);
       })
@@ -407,10 +436,9 @@ export default function LauncherSection({
   // Open one live PTY Claude session per prompt — a single batch shown as a
   // symmetric grid. Each box is an independent interactive session. Empty
   // prompts are allowed (interactive REPL with no initial task).
-  const startBatch = (prompts: string[]) => {
-    if (prompts.length === 0 || !projectPath || blocked) return;
-    const cwd = projectPath;
-    const pn = nameForPath(projectPath);
+  const openSessions = (cwd: string, prompts: string[]) => {
+    if (prompts.length === 0 || !cwd || blocked) return;
+    const pn = nameForPath(cwd);
     const po = pendingOriginRef.current;
     const repo =
       source === "github"
@@ -419,6 +447,7 @@ export default function LauncherSection({
     const stamp = Date.now().toString(36);
     const batchId = `b_${stamp}${Math.random().toString(36).slice(2, 5)}`;
     const startedAt = Date.now();
+    const origin = source === "github" ? "github" : source === "rea" ? "rea" : po?.origin;
     const batch: LiveSession[] = prompts.map((pr, i) => ({
       id: `c_${stamp}${Math.random().toString(36).slice(2, 6)}_${i}`,
       batchId,
@@ -432,7 +461,7 @@ export default function LauncherSection({
         prompt: pr,
         model,
         effort,
-        origin: source === "github" ? "github" : po?.origin,
+        origin,
         repoFullName: source === "github" ? repo?.fullName ?? po?.repoFullName : po?.repoFullName,
       },
     }));
@@ -449,6 +478,9 @@ export default function LauncherSection({
     setManualSessions([]);
     setPhase("idle");
   };
+  openRef.current = openSessions;
+
+  const startBatch = (prompts: string[]) => openSessions(projectPath, prompts);
 
   // Normal start: `boxCount` boxes, all with the same (improved) prompt.
   const start = () => {
@@ -524,9 +556,10 @@ export default function LauncherSection({
         projectPath?: string;
         projectName?: string;
         prompt?: string;
-        origin?: "github";
+        origin?: "github" | "rea";
         repoFullName?: string;
         sessionId?: string;
+        autoStart?: boolean;
         kind?: string;
         sessions?: { sessionId?: string }[];
       };
@@ -541,14 +574,21 @@ export default function LauncherSection({
         continue;
       }
       if (p?.kind === "attach-session" && p.sessionId) ids.push(p.sessionId);
+      if (p?.autoStart && typeof p.projectPath === "string" && p.projectPath.trim()) {
+        const cwd = p.projectPath.trim();
+        setPathMode("manual");
+        setProjectPath(cwd);
+        openRef.current(cwd, [typeof p.prompt === "string" ? p.prompt : ""]);
+        continue;
+      }
       if (p?.projectPath) {
         setPathMode("manual");
         setProjectPath(p.projectPath);
         setRaw(p.prompt ?? "");
         setImproved("");
         setPhase("idle");
-        pendingOriginRef.current = p.origin
-          ? { origin: p.origin, repoFullName: p.repoFullName }
+        pendingOriginRef.current = p.origin === "github"
+          ? { origin: "github", repoFullName: p.repoFullName }
           : null;
       }
     }
@@ -563,7 +603,7 @@ export default function LauncherSection({
         prompt: string;
         model: string;
         effort: string;
-        origin?: "github";
+        origin?: "github" | "rea";
         repoFullName?: string;
         where?: "remote";
         status: "running" | "done" | "error";
@@ -573,7 +613,7 @@ export default function LauncherSection({
         for (const id of ids) {
           const s = (d.sessions ?? []).find((row) => row.id === id);
           if (!s || s.where === "remote") continue;
-          if (sourceLock === "github" ? s.origin !== "github" : s.origin === "github") continue;
+          if (!sessionInLauncher(sourceLock, s.origin)) continue;
           added.push({
             id: s.id,
             batchId: s.batchId || s.id,
@@ -774,12 +814,16 @@ export default function LauncherSection({
 
   const openFolder = async () => {
     let target = "";
-    try {
-      const r = await fetch("/api/folders");
-      const c = (await r.json()) as { projectsDir?: string; clonesDir?: string | null };
-      target = (source === "github" ? c.clonesDir : c.projectsDir) || "";
-    } catch {
-      return;
+    if (source === "rea") {
+      target = projectPath;
+    } else {
+      try {
+        const r = await fetch("/api/folders");
+        const c = (await r.json()) as { projectsDir?: string; clonesDir?: string | null };
+        target = (source === "github" ? c.clonesDir : c.projectsDir) || "";
+      } catch {
+        return;
+      }
     }
     if (!target) return;
     const desktop = window.cccDesktop;
@@ -856,7 +900,18 @@ export default function LauncherSection({
                 )
               ) : (
                 <label className="flex flex-col gap-1.5">
-                  <span className="text-xs text-muted">Ordner</span>
+                  <span className="flex items-center justify-between text-xs text-muted">
+                    Ordner
+                    {source === "rea" && onSwitchInstance && (
+                      <button
+                        type="button"
+                        onClick={onSwitchInstance}
+                        className="cursor-pointer text-accent hover:underline"
+                      >
+                        Instanz wechseln
+                      </button>
+                    )}
+                  </span>
                   <input
                     value={projectPath}
                     onChange={(e) => setProjectPath(e.target.value)}
@@ -867,15 +922,27 @@ export default function LauncherSection({
                   />
                 </label>
               )}
-              <Button
-                variant="primary"
-                icon={Play}
-                className="w-full"
-                onClick={startEmpty}
-                disabled={!canStart || startBlocked}
-              >
-                Starten
-              </Button>
+              <div className={source === "rea" ? "grid grid-cols-2 gap-1.5" : ""}>
+                <Button
+                  variant="primary"
+                  icon={Play}
+                  className="w-full"
+                  onClick={startEmpty}
+                  disabled={!canStart || startBlocked}
+                >
+                  Starten
+                </Button>
+                {source === "rea" && (
+                  <Button
+                    variant="secondary"
+                    className="w-full"
+                    onClick={() => setReaOpen(true)}
+                    disabled={!canStart || startBlocked}
+                  >
+                    REA starten
+                  </Button>
+                )}
+              </div>
               {(source !== "github" || githubConnected) && (
                 <>
                   <Button
@@ -1080,6 +1147,16 @@ export default function LauncherSection({
           dir={projectPath.trim()}
           onClose={() => setImageOpen(false)}
           onRefresh={() => setFilesNonce((n) => n + 1)}
+        />
+      )}
+      {source === "rea" && reaOpen && projectPath.trim() && (
+        <ReaWizard
+          projectPath={projectPath.trim()}
+          onClose={() => setReaOpen(false)}
+          onStart={(prompt) => {
+            setReaOpen(false);
+            openSessions(projectPath.trim(), [prompt]);
+          }}
         />
       )}
     </div>

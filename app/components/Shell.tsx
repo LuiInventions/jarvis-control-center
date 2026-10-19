@@ -7,6 +7,7 @@ import {
   FolderGit2,
   FolderOpen,
   Gamepad2,
+  ScanSearch,
   Server,
   Settings as SettingsIcon,
   type LucideIcon,
@@ -21,6 +22,7 @@ import {
   type SectionId,
 } from "./app-commands";
 import LauncherSection from "./sections/LauncherSection";
+import ReaSection from "./sections/ReaSection";
 import SessionsSection from "./sections/SessionsSection";
 import SettingsSection from "./sections/SettingsSection";
 import GithubSection from "./sections/GithubSection";
@@ -39,6 +41,7 @@ const MAIN_SECTIONS: SectionDef[] = [
   { id: "remote", label: "Remote", desc: "SSH to your server and start a code CLI", icon: Server },
   { id: "github-launch", label: "GitHub", desc: "Launch a code CLI in a connected repo", icon: FolderGit2 },
   { id: "launcher", label: "Local", desc: "Launch a code CLI in a local folder", icon: FolderOpen },
+  { id: "rea", label: "REA", desc: "Reverse Engineer Anything", icon: ScanSearch },
   { id: "github", label: "Repos", desc: "Connect a GitHub token and clone repos", icon: Code },
   { id: "sessions", label: "Sessions", desc: "Live code-CLI sessions, visualized", icon: Gamepad2 },
 ];
@@ -205,6 +208,8 @@ function renderSection(id: SectionId, command: SectionCommand | null, active: bo
   switch (id) {
     case "launcher":
       return <LauncherSection command={command} sourceLock="local" />;
+    case "rea":
+      return <ReaSection command={command} />;
     case "github-launch":
       return <LauncherSection command={command} sourceLock="github" />;
     case "sessions":

@@ -32,7 +32,7 @@ export interface VisualSession {
   where?: "remote";
   /** Local folder, or the remote directory when `where` is remote. */
   cwd?: string;
-  origin?: "github";
+  origin?: "github" | "rea";
   repoFullName?: string;
   startedAt: number;
   /** KI-Modus splits share a batchId; groups them at the office's Meeting Room table. */

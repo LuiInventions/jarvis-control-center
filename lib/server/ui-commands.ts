@@ -11,6 +11,7 @@ export type UiSectionId =
   | "github"
   | "sessions"
   | "jarvis"
+  | "rea"
   | "settings";
 
 export interface UiCommand {

@@ -11,6 +11,7 @@ export type SectionId =
   | "codium"
   | "github"
   | "jarvis"
+  | "rea"
   | "settings";
 
 /** A command targeted at a section, with a nonce so repeats re-trigger effects. */

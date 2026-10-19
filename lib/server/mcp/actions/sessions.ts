@@ -82,12 +82,13 @@ export function sessionRead(id: string, maxChars?: number) {
   };
 }
 
-export type SessionArea = "github" | "local" | "remote";
+export type SessionArea = "github" | "local" | "remote" | "rea";
 
 const AREA_SECTION: Record<SessionArea, UiSectionId> = {
   github: "github-launch",
   local: "launcher",
   remote: "remote",
+  rea: "rea",
 };
 
 type ListedSession = ReturnType<typeof listPtySessions>[number];
@@ -95,7 +96,9 @@ type ListedSession = ReturnType<typeof listPtySessions>[number];
 function inArea(row: ListedSession, area: SessionArea): boolean {
   if (area === "remote") return row.where === "remote";
   if (row.where === "remote") return false;
-  return area === "github" ? row.origin === "github" : row.origin !== "github";
+  if (area === "github") return row.origin === "github";
+  if (area === "rea") return row.origin === "rea";
+  return row.origin !== "github" && row.origin !== "rea";
 }
 
 /**
@@ -172,7 +175,7 @@ export interface SessionStartInput {
   cli?: string;
   model?: string;
   effort?: string;
-  origin?: "github" | "local";
+  origin?: "github" | "local" | "rea";
   repoFullName?: string;
   projectName?: string;
   cols?: number;
@@ -193,7 +196,7 @@ interface PreparedSession {
   cliId: string;
   cwd: string;
   prompt: string;
-  origin: "github" | undefined;
+  origin: "github" | "rea" | undefined;
   repoFullName?: string;
   projectName: string;
   model?: string;
@@ -227,7 +230,7 @@ function prepareSession(input: SessionStartInput): PreparedSession {
     throw new ActionError("cwd is required for a local session. Pass an absolute folder on this PC.");
   }
   const prompt = input.prompt ?? "";
-  const origin = input.origin === "github" ? "github" : undefined;
+  const origin = input.origin === "github" || input.origin === "rea" ? input.origin : undefined;
   return {
     where,
     cliId,

@@ -78,6 +78,11 @@ export function defaultGithubReposDir(): string {
   return path.join(process.cwd(), "github_repos");
 }
 
+/** New REA instances live next to the clone folder, outside the install dir. */
+export function reaInstancesRoot(): string {
+  return path.join(path.dirname(defaultGithubReposDir()), "rea");
+}
+
 /** Verified available on this account (gpt-5.4 family). */
 export const DEFAULT_OPENAI_MODEL = "gpt-5.4-mini";
 /** Cartesia "Sebastian – Orator" — German, masculine, eloquent. */
@@ -177,6 +182,10 @@ export interface PublicConfig {
   codeCli: CodeCliId;
   /** Last Local folder chosen in the launcher. Empty until one is picked. */
   launcherLocalPath: string;
+  /** REA tab folder. Empty until an instance is created or a path is chosen. */
+  reaDir: string;
+  /** Parent folder for new REA instances. */
+  reaRoot: string;
   /** Folder that holds cloned GitHub repos. */
   githubDir: string;
   /** Active palette. Dusk when the user has not chosen one. */
@@ -225,6 +234,8 @@ export function getPublicConfig(): PublicConfig {
     port: c.port,
     codeCli: c.codeCli,
     launcherLocalPath: settings.launcherLocalPath?.trim() || "",
+    reaDir: settings.reaDir?.trim() || "",
+    reaRoot: reaInstancesRoot(),
     githubDir: c.githubDir,
     theme: settings.theme && isThemeId(settings.theme) ? settings.theme : "dusk",
     codeClis: CODE_CLIS.map((cli) => ({

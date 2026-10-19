@@ -22,6 +22,7 @@ export async function POST(req: NextRequest) {
     cartesiaVoice?: string;
     codeCli?: string;
     launcherLocalPath?: string;
+    reaDir?: string;
     theme?: string;
     /** Sent by the setup screen on "Loslegen" — stamps this app version. */
     setupComplete?: boolean;
@@ -41,6 +42,7 @@ export async function POST(req: NextRequest) {
     codeCli?: CodeCliId;
     setupVersion?: string;
     launcherLocalPath?: string;
+    reaDir?: string;
     theme?: ThemeId;
   } = {};
 
@@ -61,6 +63,13 @@ export async function POST(req: NextRequest) {
       return Response.json({ error: `Ordner existiert nicht: ${dir}` }, { status: 400 });
     }
     patch.launcherLocalPath = dir;
+  }
+  if (typeof body.reaDir === "string") {
+    const dir = body.reaDir.trim();
+    if (dir && !existsSync(dir)) {
+      return Response.json({ error: `Ordner existiert nicht: ${dir}` }, { status: 400 });
+    }
+    patch.reaDir = dir;
   }
   if (typeof body.theme === "string" && isThemeId(body.theme)) patch.theme = body.theme;
   if (typeof body.codeCli === "string" && body.codeCli.trim()) {

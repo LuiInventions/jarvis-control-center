@@ -436,6 +436,17 @@ export function registerDriveTools(server: McpServer, run: Run): void {
   );
 
   server.registerTool(
+    "list_active_rea_sessions",
+    {
+      title: "List active REA sessions",
+      description:
+        "List code CLI sessions running in the REA tab folder. Each running session gets a stable number: session 1 is the oldest, session 2 the next, and so on. A session that has exited is omitted. Read one with get_session_x_info where rea and x set to that number. Read-only.",
+      annotations: { readOnlyHint: true, openWorldHint: false },
+    },
+    async () => run(() => listActiveSessions("rea")),
+  );
+
+  server.registerTool(
     "list_active_remote_sessions",
     {
       title: "List active Remote sessions",
@@ -451,9 +462,9 @@ export function registerDriveTools(server: McpServer, run: Run): void {
     {
       title: "Read session command window",
       description:
-        "Read one running session by its number. where is github, local, or remote. x is the number from list_active_github_sessions, list_active_local_sessions, or list_active_remote_sessions. Session 1 is the oldest running session in that area. output is the command-window scrollback with ANSI codes removed. The open window also copies that text. Read-only.",
+        "Read one running session by its number. where is github, local, rea, or remote. x is the number from list_active_github_sessions, list_active_local_sessions, list_active_rea_sessions, or list_active_remote_sessions. Session 1 is the oldest running session in that area. output is the command-window scrollback with ANSI codes removed. The open window also copies that text. Read-only.",
       inputSchema: {
-        where: z.enum(["github", "local", "remote"]).describe("github, local, or remote. Must match the list the number came from."),
+        where: z.enum(["github", "local", "rea", "remote"]).describe("github, local, rea, or remote. Must match the list the number came from."),
         x: z.number().int().min(1).describe("Session number. Session 1 is the oldest running session in that area."),
       },
       annotations: { readOnlyHint: true, openWorldHint: false },

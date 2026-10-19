@@ -22,7 +22,7 @@ export interface BotRun {
   endedAt?: number;
   model?: string;
   result?: string;
-  origin?: "github";
+  origin?: "github" | "rea";
   repoFullName?: string;
 }
 
