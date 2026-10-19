@@ -5,6 +5,16 @@ follow `package.json`. From 1.9.6 each `v*` tag publishes
 `jarvis-control-center-Setup-<version>.exe`. Earlier installers were named
 `cc-control-center-Setup-<version>.exe`.
 
+## 1.9.26 — 2026-10-19
+
+### REA tab
+
+- The sidebar has a **REA** tab after Local. It opens Reverse Engineer Anything as its own workspace.
+- A new instance is created beside the clones folder, or an existing folder path is entered. The setup text can be copied, and **Setup jetzt starten** starts one session in that folder with the prompt already filled in.
+- The REA workspace uses the same session sidebar as Local: session count, folder, **Starten**, file and image upload, the file list, and **Ordner öffnen**.
+- **REA starten** lists installed programs, Start Menu targets, and Electron apps with their icons. The next step chooses **Features kopieren** or **Ganze App kopieren**, fills the prompt, and can copy it or start a session in the REA folder.
+- REA sessions stay on the REA tab. They do not appear under Local or GitHub.
+
 ## 1.9.25 — 2026-10-14
 
 ### Jarvis chat
