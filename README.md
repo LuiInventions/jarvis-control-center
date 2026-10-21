@@ -1,290 +1,371 @@
-# Jarvis Control Center
-
-> Mission control for **Claude Code**, **Grok**, and **ChatGPT Codex** — on this PC,
-> in a cloned GitHub repo, or over SSH on your own server. The app itself binds to **`127.0.0.1`**.
-
 <p align="center">
-  <a href="https://github.com/LuiInventions/jarvis-control-center/releases/latest">
-    <img alt="Download the Windows installer" src="https://img.shields.io/badge/⬇%20Download-Windows%20Installer%20(.exe)-2ea44f?style=for-the-badge&logo=windows&logoColor=white" />
-  </a>
-  &nbsp;
-  <a href="https://github.com/LuiInventions/jarvis-control-center/releases/latest">
-    <img alt="Latest release" src="https://img.shields.io/github/v/release/LuiInventions/jarvis-control-center?style=for-the-badge&label=latest&color=24292e" />
-  </a>
+  <img alt="Jarvis Control Center" src="docs/readme/banner.png" width="100%" />
 </p>
 
 <p align="center">
-  <b>No Node, no terminal, no setup</b> — grab the installer and you're running in two
-  clicks. Prefer source? Jump to <a href="#option-b--from-source">Option B</a>.
+  <a href="https://github.com/LuiInventions/jarvis-control-center/stargazers"><img alt="GitHub stars" src="https://img.shields.io/github/stars/LuiInventions/jarvis-control-center?style=for-the-badge&labelColor=1c1730&color=c4b5fd" /></a>
+  <a href="https://github.com/LuiInventions/jarvis-control-center/forks"><img alt="GitHub forks" src="https://img.shields.io/github/forks/LuiInventions/jarvis-control-center?style=for-the-badge&labelColor=1c1730&color=c4b5fd" /></a>
+  <a href="https://github.com/LuiInventions/jarvis-control-center/issues"><img alt="GitHub issues" src="https://img.shields.io/github/issues/LuiInventions/jarvis-control-center?style=for-the-badge&labelColor=1c1730&color=c4b5fd" /></a>
+  <a href="https://github.com/LuiInventions/jarvis-control-center/blob/main/LICENSE"><img alt="License" src="https://img.shields.io/github/license/LuiInventions/jarvis-control-center?style=for-the-badge&labelColor=1c1730&color=c4b5fd" /></a>
+  <a href="https://github.com/LuiInventions/jarvis-control-center/releases/latest"><img alt="Latest release" src="https://img.shields.io/github/v/release/LuiInventions/jarvis-control-center?style=for-the-badge&labelColor=1c1730&color=c4b5fd" /></a>
 </p>
 
-> [!TIP]
-> **v1.9.28** is the current release. The sidebar order is **Jarvis**, **Remote**,
-> **GitHub**, **Local**, **REA**, **Repos**, **Sessions**. **REA** opens Reverse
-> Engineer Anything in its own workspace: create an instance or enter a path,
-> copy the setup text, and start a session there. The setup text asks the session
-> to check whether the MCP server or the plugin is already installed. **REA starten**
-> lists every program on this PC, including Start menu and Store apps, and a software
-> name can be typed next to that list. The next step is a feature, the whole app, or
-> **Selber prompten**. Selber prompten fills only the agent role and the program name.
-> A feature or the whole app then asks for the clone name or the project the feature
-> is built into. The prompt opens in a tall editor. Those sessions stay
-> on the REA tab. Jarvis is a chat with GPT 6 Luna
-> at low reasoning effort. The OpenAI key is entered in that tab. The reply shows
-> each tool call, and a panel on the right shows what the local MCP server answered.
-> Running GitHub, Local, and Remote sessions are numbered, and a tool reads a
-> session's command-window text. Remote starts a code CLI on your server and
-> can upload and download files there. Dropping or choosing a folder asks for
-> confirmation, then uploads it. **Bild hochladen** pastes images into a new
-> `image_set` folder. Older sets are buttons in one row. Choosing one shows the
-> pictures saved on this PC, and the set can be deleted.
-> **Dateien hochladen** and **Bild hochladen** are also on GitHub and Local and
-> write into the folder on this PC. **Repos → New repo** creates the repository
-> in the clones folder. That path is fixed. **Repos → Update** commits local
-> changes, merges what GitHub gained, and pushes.
-> The installer is `jarvis-control-center-Setup-1.9.28.exe`. v1.8.0 was withdrawn.
-> v1.9.6 has no installer. [**Changelog**](CHANGELOG.md)
+<p align="center">
+  One window for <b>Claude Code</b>, <b>Grok</b>, and <b>ChatGPT Codex</b>.<br />
+  Run them on this PC, in a cloned GitHub repo, or over SSH.<br />
+  <b>REA</b> reverse-engineers a program in its own workspace.<br />
+  A built-in <b>MCP server</b> lets Jarvis manage the window and your sessions.
+</p>
 
-<img width="1920" height="1080" alt="Jarvis Control Center" src="https://github.com/user-attachments/assets/961f27e3-c90e-4594-bbbc-ce2fa462e56b" />
+<p align="center">
+  <a href="https://github.com/LuiInventions/jarvis-control-center/releases/latest"><img alt="Download the Windows installer" src="https://img.shields.io/badge/Download-Windows%20installer-2ea44f?style=for-the-badge&logo=windows&logoColor=white" /></a>
+</p>
+
+<p align="center">
+  <b>v1.9.28</b> · installer <code>jarvis-control-center-Setup-1.9.28.exe</code> · <a href="CHANGELOG.md">Changelog</a><br />
+  The app listens only on <code>127.0.0.1</code>. The window is in German.
+</p>
 
 ---
 
-## What it is
+## Contents
 
-A terminal gives you one session, no view of the server, and a manual `git add` /
-`git commit` / `git push` after the agent is done.
-
-**Jarvis Control Center** is one window for the whole loop:
-
-- **Remote** — log into your server with SSH and start Claude Code, Grok, or Codex there, in a folder you pick, with the server's files beside the terminal.
-- **GitHub** — start the same CLI inside a repo you cloned. **Repos** keeps the token, the clone, and a one-click **Update** that commits and pushes for you.
-- **Local** — the same launcher against a folder on this PC.
-- **Jarvis** — a chat with GPT 6 Luna at low reasoning effort. The OpenAI key is entered in this tab. It calls the local MCP tools, shows each call in the reply, and prints the server's answer in the panel on the right.
-- **Sessions** — every running agent as a character in a pixel office
-
-It ships as a **Windows desktop app**
-([**download the `.exe`**](https://github.com/LuiInventions/jarvis-control-center/releases/latest))
-or as a **web app** you start from source. The control center listens only on
-loopback. Remote is an SSH session *from* that app out to a host you name.
-
----
-
-## Table of contents
-
-- [Highlights](#highlights)
-- [Features](#features)
-  - [Remote](#remote)
-  - [GitHub and Repos](#github-and-repos)
-  - [Local](#local)
-  - [VS Codium](#vs-codium)
-  - [Files](#files)
-  - [Sessions](#sessions)
-  - [Settings](#settings)
-- [A typical session](#a-typical-session)
+- [The window](#the-window)
+- [Jarvis](#jarvis)
+- [Remote](#remote)
+- [GitHub](#github)
+- [Local](#local)
+- [REA](#rea)
+- [Repos](#repos)
+- [Sessions](#sessions)
+- [Settings](#settings)
+- [MCP server](#mcp-server)
 - [Quick start](#quick-start)
-  - [Option A — Desktop app (.exe)](#option-a--desktop-app-exe)
-  - [Option B — From source](#option-b--from-source)
 - [Requirements](#requirements)
 - [Configuration](#configuration)
 - [How it works](#how-it-works)
-- [Scripts](#scripts)
 - [Security](#security)
 - [License](#license)
 
 ---
 
-## Highlights
+## The window
 
-- 🛰️ **Remote first** — `user@IP`, then the password and a 2FA code only when SSH asks. **Starten** opens 1–6 live terminals on the server, reusing the login that is already open.
-- 🐙 **GitHub, with the commit written for you** — connect a token, clone, create a repo, flip public/private. **Update** lists the changed files, then commits them (`Update via Control Center`), merges remote commits, and pushes.
-- 📁 **Clones survive an upgrade** — they live in `%LOCALAPPDATA%\Jarvis Control Center\github_repos`, outside the program folder the installer replaces. A missing clone is fetched again with the saved token.
-- 📤 **Remote files** — upload into the current server folder, and download a file or folder onto this PC.
-- 🚀 **Claude Code, Grok, or ChatGPT Codex** — pick the CLI once. Local, GitHub, and Remote all start that CLI. Up to six sessions, real server-side PTYs that survive a reload.
-- 📄 **Click a file** — Local, GitHub, and Remote open it where the terminals sit. CodeMirror for text; images, PDF, audio, and video in the viewer.
-- 🎮 **Sessions office** — running agents as pixel characters, labeled **GitHub**, **Lokal**, or **Server**.
-- 🎨 **Six themes** — Dusk is the default. Ink, Moss, Tide, Clay, and Plum sit next to it.
-- 🔒 **Loopback app, encrypted keys** — the window talks to `127.0.0.1`. API keys and the GitHub token are encrypted at rest in the desktop build (Windows DPAPI).
+The sidebar, top to bottom, is **Jarvis**, **Remote**, **GitHub**, **Local**, **REA**, **Repos**, **Sessions**, then **Settings**.
+
+Jarvis is the chat. The three launchers start the code CLI you picked in Settings. REA is a separate workspace for [Reverse Engineer Anything](https://github.com/morluto/rea). Repos is the GitHub account. Sessions draws every running agent in a pixel office.
+
+VS Codium is not in the sidebar.
 
 ---
 
-## Features
+## Jarvis
 
-The sidebar, top to bottom: **Remote**, **GitHub**, **Local**, **Repos**, **Sessions**, then **Settings**.
+<img alt="Jarvis chat. Tool calls are marked in the reply, and the MCP panel on the right shows the live session." src="docs/readme/jarvis.png" width="100%" />
 
-### Remote
+Jarvis talks to **GPT 6 Luna** at low reasoning effort. The OpenAI key is entered on this tab with **API-Key** and stored with Windows DPAPI. It is not asked for on the first-run screen.
 
-Remote is the first tab. It is how you run a code CLI on a machine that is not this PC.
+The reply names each tool call. The panel on the right is the local MCP server: arguments in, result out. From the chat, Jarvis can open a tab, start a CLI, read what that session just printed, and send the next prompt. You stay in the conversation. The window follows.
 
-1. Enter **`user@IP`** (or pick a saved server) and press **Verbinden**. SSH starts in the background. The password field appears when the server asks for a password, and the 2FA field when it asks for a code. The code is not stored. **IP und Passwort speichern** keeps the host, user, and password.
-2. Once you are in, the left rail matches the other launchers: **Session count** (1–6), **Ordner**, **Starten**, and the server's file list. The connected IP is shown in green next to **Trennen**.
-3. **Starten** opens that many terminals in the folder in **Ordner**. Each one is the code CLI from Settings (Claude Code, Grok, or Codex), with an empty prompt, so you talk to it in the terminal. The CLI reuses the SSH login that is already open. A second connection is not started.
-4. Click a folder in the list to put that path into **Ordner**. Left-click a file to open it. **Dateien** and **Sessions** switch the main area between the file and the terminals. **Dateien hochladen** sends files into that folder. Right-click a file or folder and choose **Herunterladen** to save it on this PC.
+---
 
-A saved server can be chosen again from the dropdown. **Trennen** closes the session.
+## Remote
 
-### GitHub and Repos
+<img alt="Remote tab. Enter user@IP, then connect. The password and 2FA appear only when SSH asks." src="docs/readme/remote.png" width="100%" />
 
-Two tabs share one clone:
+Remote runs the code CLI on a machine that is not this PC.
 
-- **GitHub** starts the code CLI in a cloned repo. The rail is a **Repo** dropdown, **Session count**, **Starten**, and that repo's files. Without a connected account the tab asks you to connect GitHub under **Repos**.
-- **Repos** is the account. Paste a personal access token, clone repos you can see, create a repository (public or private) in the clones folder, and change visibility later. The folder path for a new repo is fixed.
+1. Enter **user@IP**, or pick a saved server, and press **Verbinden**. The password field appears when SSH asks, and the 2FA field when it asks for a code. The code is not stored.
+2. **Starten** opens 1–6 terminals in the folder in **Ordner**. They reuse the SSH login that is already open.
+3. **Dateien hochladen** and **Bild hochladen** send files into that folder. **Herunterladen** saves a file or folder on this PC.
 
-Cloned repos are stored in `%LOCALAPPDATA%\Jarvis Control Center\github_repos`
-(a source checkout uses `github_repos` in the working directory). **Ordner öffnen**
-on GitHub opens that folder. An upgrade deletes the program folder and leaves
-the clones in place. A clone whose folder is gone is cloned again with the saved
-token. A clone that is still on disk is moved and keeps its files.
+**Bild hochladen** puts pictures in an `image_set` folder, up to 10 images. Choosing a set copies `in {folder} sind die bilder:` so you can paste it into the CLI.
 
-Each repo card lists uncommitted files — edits from the CLI, from VS Codium, or
-by hand. **Update** opens those files, and **Pushen** then:
+---
 
-1. `git add -A` and a commit with the message `Update via Control Center`, when the working tree is dirty.
-2. `git fetch`, then a merge when the remote is ahead. A conflict aborts the merge. A commit from step 1 stays.
-3. `git push` to `origin/<branch>`.
+## GitHub
 
-The GitHub token is sent as an auth header for that call. It is not written into `.git/config`.
+<img alt="GitHub tab. A cloned repo is selected, with session count, Start, and the repo file tree." src="docs/readme/github.png" width="100%" />
 
-`git user.name` and `git user.email` have to be set on the machine, or the commit step stops.
+GitHub starts the code CLI inside a repo you already cloned. Pick the repo, set the session count from 1 to 6, and press **Starten**. The same CLI from Settings is used here.
 
-### Local
+**Dateien** and **Sessions** switch the main area between the file tree and the terminals. A left-click opens a file in that area. **Dateien hochladen** and **Bild hochladen** write into the folder on this PC.
 
-local is the same rail against a folder on this PC: **Session count**, **Ordner**, **Starten**, the file list, and **Ordner öffnen** (the projects folder from Settings). **Starten** opens the selected code CLI there. Clicking a subfolder writes that path into **Ordner**.
+The account, the clone, and the push live on **Repos**.
 
-A Claude Code session shows the usage bar. Grok and Codex do not.
+---
 
-### VS Codium
+## Local
 
-VS Codium is not in the sidebar in this release, and it is not started with the app. The section below describes the editor as it worked when the tab was shown: `codium serve-web` (or `code serve-web` when Codium is not installed) in the Local folder. **Neu laden** refreshes it. **Erneut versuchen** starts it again.
+<img alt="Local tab. Session count, the folder on this PC, Start, and a file open in the editor." src="docs/readme/local.png" width="100%" />
 
-The editor is on this PC. The Remote SSH login is separate and is not used to open it.
+Local is the same launcher against a folder on this PC. **Ordner** is that folder. **Starten** opens the selected code CLI there. Clicking a subfolder writes that path into **Ordner**.
 
-On Windows the `.cmd` shim is started through `cmd.exe`, so `serve-web` actually returns its port.
+Text opens in the editor and can be saved. Images, PDF, audio, and video use the viewer. A Claude Code session shows the usage bar.
 
-### Files
+---
 
-A left-click in the file list on **Local**, **GitHub**, or **Remote** opens the file in the area the terminals use. Text opens in CodeMirror with line numbers and color, and can be edited and saved. Images, PDF, audio, and video use the viewer. While a session is running, **Dateien** and **Sessions** switch that area. Folder lists use **Zurück**.
+## REA
 
-### Sessions
+<img alt="REA starten. Every installed program is listed, and a software name can be typed by hand." src="docs/readme/rea.png" width="100%" />
 
-The **Sessions** tab draws every launcher session that is still running as a pixel office, in the style of [pixel-agents](https://github.com/pixel-agents-hq/pixel-agents). The office is built into the app.
+REA is its own workspace. Sessions started here stay off Local and GitHub.
 
-Each character has its own name. Above the name is where it was started: **GitHub**, **Lokal**, or **Server**. Clicking the name opens that tab. The pose follows the live tool — typing, reading, a shell command, waiting — and in-session subagents are their own small characters. The assets ship with the app.
+You create an instance or point it at a folder, then copy the setup text into the session. That text tells the session to look at [Reverse Engineer Anything](https://github.com/morluto/rea) and to check whether the MCP server or the plugin is already installed.
+
+**REA starten** lists every program on this PC: uninstall entries, Start menu, and Microsoft Store apps, including a program that has no executable. A name can be typed next to that list. The next step is one of three:
+
+- **Features kopieren** traces one feature and asks for the project it should be built into.
+- **Ganze App kopieren** traces the whole program and asks for the clone name.
+- **Selber prompten** fills only the agent role and the program name. You write the rest.
+
+The prompt opens in a tall editor. The MCP server numbers those sessions with `list_active_rea_sessions` and reads one with `get_session_x_info`.
+
+---
+
+## Repos
+
+<img alt="Repos tab. The connected GitHub account, repository cards, and Update." src="docs/readme/repos.png" width="100%" />
+
+Repos is the account. Paste a personal access token, and the app lists the repositories you can see, clones the ones that are missing, and can create a new one.
+
+**New repo** creates `<clones folder>/<name>` only. That path is fixed. A name must match `[A-Za-z0-9][A-Za-z0-9._-]{0,99}`.
+
+**Update** shows the changed files. **Pushen** then:
+
+1. Commits a dirty tree with the message `Update via Control Center`.
+2. Fetches and merges. A conflict aborts the merge and does not push.
+3. Pushes to `origin`.
+
+The token is sent as an auth header. It is not written into `.git/config`. `git user.name` and `git user.email` have to be set, or the commit stops.
+
+Clones live in `%LOCALAPPDATA%\Jarvis Control Center\github_repos`, outside the folder the installer replaces. A source checkout uses `github_repos` in the working directory.
+
+---
+
+## Sessions
+
+<img alt="Sessions tab. Running agents as characters in a pixel office." src="docs/readme/sessions.png" width="100%" />
+
+Every launcher session that is still running is a character in a pixel office, in the style of [pixel-agents](https://github.com/pixel-agents-hq/pixel-agents). The label above the name is where it was started. Clicking the name opens that tab. The pose follows the live tool, and in-session subagents are their own small characters.
+
+---
+
+## Settings
+
+<img alt="Settings. Theme, code CLI, projects folder, and the loopback address." src="docs/readme/settings.png" width="100%" />
+
+- **Code CLI** is Claude Code (`claude`), Grok (`grok`), or ChatGPT Codex (`codex`). Local, GitHub, and REA start this binary. Remote can use its own.
+- **Theme** is Ink, Dusk, Moss, Tide, Clay, or Plum. Dusk is the default.
+- **Projects folder** is the directory Local starts from.
+
+The first-run screen asks for the projects folder and the code CLI. It does not ask for an API key.
+
+---
+
+## MCP server
+
+Jarvis Control Center starts a stateless **Streamable HTTP** MCP server on the same loopback listener as the window. The path is `/mcp`. While the app is running, the live URL is written to `.data/mcp.json` and cleared on shutdown.
+
+```json
+{
+  "name": "jarvis-control-center",
+  "transport": "streamable-http",
+  "url": "http://127.0.0.1:3100/mcp"
+}
+```
+
+The port is 3100 unless that port is taken. Read `url` from the file. Do not hard-code a port.
+
+Jarvis calls this server on every turn. The same URL is how **Claude Code**, **Grok**, or **Codex** can drive the program from a session: show a tab, open 1–6 terminals, read session 1, send the next line, copy a file, or commit a repo after you confirm. The session keeps running until something calls `session_stop`. Secrets, tokens, passwords, and 2FA codes are never returned.
+
+<img alt="Mind map of the 88 Jarvis MCP tools, grouped by window, settings, sessions, REA, GitHub, repos, local, files, and remote." src="docs/readme/mindmap.png" width="100%" />
+
+Call `app_status` first. Use ids, paths, and repo names from tool results. Uploads and downloads through these tools cap at 64 MB. Image uploads cap at 10 images and return the `in {folder} sind die bilder:` sentence.
+
+### Window
+
+| Tool | What it does |
+|---|---|
+| `app_status` | Version, MCP URL, code CLI, folders, GitHub, SSH, and how many sessions are live. |
+| `app_navigate` | Show Remote, GitHub, Local, REA, Repos, Sessions, or Settings. |
+| `app_sections` | The sidebar sections and what each one is for. |
 
 ### Settings
 
-- **Code CLI** — Claude Code (`claude`), Grok (`grok`), or ChatGPT Codex (`codex`). Local, GitHub, and Remote all start this binary. Model and effort stay on the CLI's own defaults (**Standard**).
-- **Theme** — Ink, Dusk, Moss, Tide, Clay, Plum. Dusk is used when none is saved.
-- **Projects folder** — the directory Local treats as home. A native folder picker is used in the desktop app.
+| Tool | What it does |
+|---|---|
+| `settings_get` | Public settings. No API keys. |
+| `settings_update` | Change the projects folder, code CLI, theme, or setup flag. |
+| `secrets_status` | Which keys are stored. Values stay hidden. |
+| `secrets_set` | Store or clear one provider key. |
+| `providers_test` | Check that a stored key works. |
+| `models_list` | Models for the active provider. |
+| `usage_get` | Claude Code rate-limit windows tracked by this app. |
+| `index_status` | When the local project index was last built. |
+| `index_rebuild` | Rescan the projects folder. |
 
-The first-run screen asks for the projects folder and the code CLI. It does not ask for an API key. The OpenAI key for Jarvis is entered in the Jarvis tab. After an update that screen runs once more. The GitHub token, the Jarvis key, and clones stay.
+### Sessions
 
----
+| Tool | What it does |
+|---|---|
+| `session_list` | Every code-CLI PTY still in memory. |
+| `session_start` | Start Claude Code, Grok, or Codex in one PTY. |
+| `session_send` | Send a follow-up and wait until output settles. |
+| `session_write` | Send raw keys, such as Ctrl+C. |
+| `session_read` | Readable tail of one session, with ANSI removed. |
+| `session_resize` | Set the terminal grid. |
+| `session_stop` | Stop one PTY. This cannot be resumed. |
+| `session_history` | Saved launcher history. This is not the live list. |
+| `session_history_delete` | Remove one history row. Does not stop a live PTY. |
+| `session_review` | A markdown report of live sessions from the configured model. |
+| `prompt_improve` | Rewrite a prompt using the folder on disk. Does not start a session. |
+| `prompt_split` | Split one task into 1–6 prompts. |
+| `list_active_github_sessions` | Number the running GitHub sessions. Session 1 is the oldest. |
+| `list_active_local_sessions` | Number the running Local sessions. |
+| `list_active_rea_sessions` | Number the running REA sessions. |
+| `list_active_remote_sessions` | Number the running Remote sessions. |
+| `get_session_x_info` | Read session `x` for `github`, `local`, `rea`, or `remote`, and copy that text. |
 
-## A typical session
+### GitHub
 
-```text
-Remote ──▶ user@IP ──▶ SSH ──▶ Ordner ──▶ Starten ──▶ CLI on the server
-GitHub ──▶ pick a clone ──▶ Starten ──▶ CLI in the repo ──▶ Repos ──▶ Update
-Local  ──▶ Ordner ──▶ Starten ──▶ CLI here ──▶ VS Codium on the same folder
-                                      │
-                                      ▼
-                    live terminals  #1 … #6    Dateien ⇄ Sessions
-                                      │
-                                      ▼
-                         Sessions office  (GitHub / Lokal / Server)
-```
+| Tool | What it does |
+|---|---|
+| `github_cloned_repos` | Clones that are already on disk. |
+| `github_select_repo` | Show one clone on the GitHub tab. |
+| `github_session_start` | Open 1–6 sessions in that clone. |
+| `github_search` | Search file and folder names inside the clone. |
+| `github_read_file` | Read a text file in the clone. |
+| `github_save_file` | Save a text file. This does not commit. |
+| `github_copy_path` | Copy a path inside the clone to the clipboard. |
+| `github_upload` | Copy files and folders into the clone. |
+| `github_upload_images` | Copy up to 10 images into an `image_set` folder. |
 
-You connect, start the CLI, watch it in the terminal or the office, open files beside it, and send the repo back to GitHub with **Update**.
+### Repos
+
+| Tool | What it does |
+|---|---|
+| `github_status` | The signed-in user's repositories. |
+| `github_repo` | Git summary and the files Update would ship. |
+| `github_connect` | Store a personal access token and clone what is missing. |
+| `github_disconnect` | Forget the token. Clones stay on disk. |
+| `github_refresh` | Refresh the list and fast-forward clones that are on disk. |
+| `github_create_repo` | Create a repository in the clones folder. |
+| `github_update_repo` | Commit, merge, and push. `confirm` must be true. |
+| `github_set_visibility` | Make a repository private or public. |
+
+### Local
+
+| Tool | What it does |
+|---|---|
+| `local_get_path` | The folder selected on Local. |
+| `local_select_path` | Choose that folder. |
+| `local_set_projects_dir` | Change the projects folder in Settings. |
+| `local_session_start` | Open 1–6 sessions in the selected folder. |
+| `local_search` | Search names under that folder. |
+| `local_read_file` | Read a text file there. |
+| `local_save_file` | Save a text file there. |
+| `local_copy_path` | Copy a path to the clipboard. |
+| `local_upload` | Copy files and folders into that folder. |
+| `local_upload_images` | Copy images into an `image_set` folder. |
+| `projects_list` | Subfolders of the projects directory. |
+| `project_detail` | Stack, git, and README for one project. |
+| `find_folder` | Search this PC for a folder by name. |
+| `folders_roots` | The projects folder and the clones folder. |
+
+### Files
+
+| Tool | What it does |
+|---|---|
+| `files_list` | List a folder on this PC. Omit the path to list drives. |
+| `files_read` | Read a text file. |
+| `files_write` | Replace a UTF-8 text file. |
+| `files_preview` | Preview a file, or a folder's README. |
+| `local_copy_file` | Copy one file into a folder. |
+| `reveal_in_explorer` | Open a path in Windows Explorer. |
+| `image_sets_list` | Local copies of `image_set` folders. |
+| `image_set_delete` | Delete one `image_set` folder and its cache. |
+
+### Remote
+
+| Tool | What it does |
+|---|---|
+| `remote_status` | The SSH login, the folder, and whether a password or code is needed. |
+| `remote_saved_servers` | Saved servers. Passwords are not included. |
+| `remote_start_saved` | Connect to a saved server. |
+| `remote_connect` | Start SSH to a new host. |
+| `remote_submit_password` | Answer the password prompt. `useSaved` sends the stored one. |
+| `remote_submit_otp` | Answer the 2FA prompt. The code is not stored. |
+| `remote_disconnect` | Close the SSH login. |
+| `remote_set_dir` | Choose the remote folder. |
+| `remote_login_tail` | Read the login terminal. Password and code characters are redacted. |
+| `remote_session_start` | Open 1–6 sessions on the connected server. |
+| `remote_list` | List a remote folder. |
+| `remote_search` | Search names on the server. |
+| `remote_read_file` | Read a remote text file. |
+| `remote_write_file` | Save a remote text file. |
+| `remote_mkdir` | Create one remote folder. Parents are not created for you. |
+| `remote_copy_path` | Copy a remote path to the clipboard. |
+| `remote_upload` | Copy files and folders to the server. |
+| `remote_upload_file` | Copy one file to the server. |
+| `remote_upload_images` | Copy images into a remote `image_set` folder. |
+| `remote_download` | Save a remote file or folder onto this PC. |
+
+There is also a prompt, `drive-jarvis`, with the same operating notes the server gives a client.
 
 ---
 
 ## Quick start
 
-Most people want **Option A**. **Option B** is for running from source.
+### Desktop app
 
-### Option A — Desktop app (.exe)
+The installer does not need Node.
 
-**No Node.js, no terminal, no `npm install`.**
+1. Download **`jarvis-control-center-Setup-<version>.exe`** from the [latest release](https://github.com/LuiInventions/jarvis-control-center/releases/latest).
+2. Run it. It installs per user and adds a Start-menu shortcut.
+3. On first launch, pick the projects folder and the code CLI. The OpenAI key for Jarvis is entered later, on the Jarvis tab.
 
-1. **Download the installer** from the
-   [**latest release**](https://github.com/LuiInventions/jarvis-control-center/releases/latest):
-   **`jarvis-control-center-Setup-<version>.exe`**.
-2. **Run it.** It installs per-user (no admin rights) and adds a Start-menu shortcut. The UI is its own window. The loopback server stays inside the process.
-3. **First launch → setup screen.** Pick your projects folder and choose the code CLI (Claude Code, Grok, or ChatGPT Codex). The OpenAI key is entered later, in the Jarvis tab.
+The app is published by **LT Digital Concepts (Luis Kleemann)**. Until the build is signed, Windows SmartScreen can say the publisher is unknown. **More info → Run anyway**. Signing is described in [`build/SIGNING.md`](build/SIGNING.md).
 
-> **Publisher.** The app is published by **LT Digital Concepts (Luis Kleemann)**.
-> Until the build is signed with a CA-issued certificate, Windows SmartScreen may
-> show an "Unknown publisher" prompt. Click **More info → Run anyway**. The
-> signing pipeline is described in [`build/SIGNING.md`](build/SIGNING.md).
+An update runs the welcome screen once so you can confirm the projects folder and the code CLI. The GitHub token, the Jarvis key, saved SSH logins, and the clones stay.
 
-> **Updating keeps your data.** The welcome screen runs once so you can
-> re-confirm the projects folder and the code CLI. The per-user profile — GitHub token, the Jarvis key, saved
-> SSH logins — stays. Clones live under
-> `%LOCALAPPDATA%\Jarvis Control Center\github_repos`, so replacing the program
-> folder does not delete them.
-
-The installer bundles Node and the app runtime. You still install the **code CLI**
-you selected (`claude`, `grok`, or `codex`) and log in to it. Remote needs the
-**OpenSSH Client**. VS Codium needs **VS Codium** or **VS Code** on this PC.
-Keys are encrypted with Windows DPAPI in your user profile.
+You still install the code CLI you selected and log in to it. Remote needs the **OpenSSH Client**.
 
 <details>
-<summary><strong>Build the installer yourself instead</strong></summary>
+<summary><strong>Build the installer yourself</strong></summary>
 
 ```powershell
 npm install
 npm run electron:build
 ```
 
-This produces, in `build/dist/`, a self-contained **NSIS installer**
-(`jarvis-control-center-Setup-<version>.exe`). For developing the desktop shell,
-`npm run electron:dev` runs it from source with Next.js in dev mode and DevTools available.
+The NSIS installer is written to `build/dist/`. `npm run electron:dev` runs the desktop shell from source.
 
 </details>
 
-### Option B — From source
-
-Open a **PowerShell** terminal.
-
-**1. Clone**
+### From source
 
 ```powershell
 git clone https://github.com/LuiInventions/jarvis-control-center
 cd jarvis-control-center
-```
-
-**2. Install & configure (guided)**
-
-```powershell
 .\setup.ps1
+npm run dev
 ```
 
-It verifies Node.js and git, runs `npm install`, creates `.env.local` from
-`.env.example`, and asks for your projects folder. The OpenAI key is entered in the Jarvis tab.
-
-If PowerShell blocks the script:
+Then open **http://127.0.0.1:3100**. If PowerShell blocks the script:
 
 ```powershell
 powershell -ExecutionPolicy Bypass -File .\setup.ps1
 ```
 
-**3. Start**
-
-```powershell
-npm run dev
-```
-
-Then open **http://127.0.0.1:3100**. Missing settings show the same first-run screen as the desktop build.
-
-In a source checkout, GitHub clones land in `github_repos` inside the working directory.
+`setup.ps1` checks Node.js and git, runs `npm install`, and asks for the projects folder. In a source checkout, clones land in `github_repos` inside the working directory.
 
 <details>
-<summary><strong>Manual install (instead of <code>setup.ps1</code>)</strong></summary>
+<summary><strong>Manual install</strong></summary>
 
 ```powershell
 npm install
 copy .env.example .env.local
-#   -> set PROJECTS_DIR if you want a folder other than ./projects
 npm run dev
 ```
 
@@ -294,114 +375,65 @@ npm run dev
 
 ## Requirements
 
-- **Windows 11**, **Node.js ≥ 20.9** (developed and tested on Node 24) for a source checkout. The installer does not need Node.
-- **git** on your `PATH`, with `user.name` and `user.email` set (Repos → Update commits as you).
-- **One code CLI**, installed and logged in: **Claude Code** (`claude`), **Grok** (`grok`, [Grok Build](https://x.ai/cli)), or **ChatGPT Codex** (`codex`).
-- **OpenSSH Client** for the Remote tab (`ssh.exe`, the Windows optional feature).
-- **VS Codium** or **VS Code** for the editor tab. Codium is preferred when both are installed.
-- An **OpenAI API key**, entered in the Jarvis tab, for the GPT 6 Luna chat.
+- **Windows 11**. A source checkout needs **Node.js ≥ 20.9**. The installer does not.
+- **git** on `PATH`, with `user.name` and `user.email` set.
+- One code CLI, installed and logged in: [Claude Code](https://docs.anthropic.com/en/docs/claude-code), [Grok](https://x.ai/cli), or ChatGPT Codex (`codex`).
+- **OpenSSH Client** (`ssh.exe`) for Remote.
+- An **OpenAI API key**, entered on the Jarvis tab, for the GPT 6 Luna chat.
 
 ---
 
 ## Configuration
 
-Settings come from `.env.local` **or** the in-app **Settings** page / first-run screen.
-Precedence, highest first: **Settings UI** (`.data/settings.json`) → **environment**
-(`.env.local`) → **built-in default**.
+Settings come from `.env.local` or the in-app Settings page. Precedence, highest first: **Settings** (`.data/settings.json`) → **environment** → **built-in default**.
 
 | Variable | What it controls | Default |
 |---|---|---|
-| `OPENAI_API_KEY` | Optional fallback for the Jarvis key. The tab's own field is the one to use. **Server-side only.** | – |
-| `PROJECTS_DIR` | Folder Local starts from, until you pick another in the app | `./projects` |
+| `OPENAI_API_KEY` | Optional fallback for the Jarvis key. Server-side only. | – |
+| `PROJECTS_DIR` | Folder Local starts from, until you pick another | `./projects` |
 | `HOST` | Bind address. Leave this. | `127.0.0.1` |
 | `PORT` | Port | `3100` |
-| `CLAUDE_BIN` | Explicit path to the Claude CLI | auto (`where claude`) |
+| `CLAUDE_BIN` | Explicit path to the Claude CLI | auto |
 
 The code CLI is `codeCli` in `.data/settings.json`: `claude`, `grok`, or `codex`.
 
-**Clone folder.** The desktop app sets `CCC_GITHUB_DIR` to
-`%LOCALAPPDATA%\Jarvis Control Center\github_repos` before the server starts.
-A dev run uses `<cwd>/github_repos`. That path is not a Settings field.
+The desktop app sets `CCC_GITHUB_DIR` to `%LOCALAPPDATA%\Jarvis Control Center\github_repos` before the server starts. A dev run uses `<cwd>/github_repos`.
 
-> **The Jarvis key never reaches the chat transcript.** In a source checkout it is stored in a gitignored
-> `.data/secrets.json`. In the desktop build it is encrypted with Windows DPAPI. The GitHub token is stored the same way.
-
-`PROJECTS_DIR` defaults to a folder inside the app directory. Point it elsewhere
-from Settings or the environment (absolute path).
+In a source checkout the Jarvis key is in a gitignored `.data/secrets.json`. In the desktop build it is encrypted with Windows DPAPI. The GitHub token is stored the same way.
 
 ---
 
 ## How it works
 
-A **custom Node server** (`server.ts`) binds to `127.0.0.1` and hosts Next.js and a
-**`ws` WebSocket server** on the same port. Code-CLI sessions stream over WebSocket
-and run as **`node-pty`** PTYs, which is why they survive a reload.
+`server.ts` binds to `127.0.0.1` and hosts Next.js, a `ws` server, and the MCP endpoint on one port. Code-CLI sessions are `node-pty` PTYs, so they survive a reload.
 
-**Remote** opens one OpenSSH session (`ssh.exe`). After login, a broker inside
-that same session starts the code CLI. A second SSH connection is not opened.
-Server files are listed and read through that session.
+Remote opens one `ssh.exe` session. After login, a broker inside that session starts the CLI and moves files. A second SSH connection is not opened.
 
-**Repos → Update** calls `gitSyncAndPush`: commit when the tree is dirty, fetch,
-merge, push. The token rides on the git command as an HTTP header.
-
-**VS Codium** spawns `serve-web` on the Local folder and the window embeds that URL.
+Repos → Update calls commit (when the tree is dirty), fetch, merge, and push. The token rides on the git command as an HTTP header.
 
 ```text
-server.ts                  Next + ws, binds 127.0.0.1
-lib/
-  config.ts                Env + settings.json + secrets
-  code-clis.ts             Claude Code, Grok, ChatGPT Codex
-  git.ts                   Status, and Update (commit + merge + push)
-  github-store.ts          Connected repos
-  remote-ssh.ts            SSH login, saved servers
-  editor-bin.ts            VS Codium / VS Code spawn (Windows .cmd shim)
-  server/
-    claude-pty.ts          PTY registry
-    remote-broker.ts       SSH session forward
-    remote-session.ts      CLI on the connected server
-    local-codium.ts        serve-web on the Local folder
-    codium-proxy.ts        Loopback proxy in front of the editor
-app/
-  components/sections/     Remote, GitHub, Local, Repos, VS Codium, Sessions
-  api/remote, api/github, api/codium
-build/                     Electron main, preload, NSIS installer
+server.ts                         Next + ws + /mcp, binds 127.0.0.1
+lib/server/mcp/                   88 tools, stateless Streamable HTTP
+lib/server/jarvis/                GPT 6 Luna chat, tool calls, MCP panel
+lib/server/claude-pty.ts          PTY registry
+lib/server/remote-broker.ts       one SSH session
+app/components/sections/          Jarvis, Remote, GitHub, Local, REA, Repos, Sessions
+build/                            Electron main, preload, NSIS installer
 ```
-
-Desktop user data (settings, secrets, launcher state) lives in the Electron
-`userData` directory. Clones live beside it, under Local AppData, so an
-installer upgrade can replace the program folder and leave the repos.
-
----
-
-## Scripts
-
-```powershell
-npm run dev            # Dev server (custom server.ts, watch mode)
-npm run build          # Production build (Next, compile mode)
-npm run start          # Production server
-npm run test           # Unit tests (vitest)
-npm run typecheck      # tsc --noEmit
-npm run lint           # ESLint
-npm run electron:dev   # Desktop app from source (own window, DevTools)
-npm run electron:build # Self-contained Windows .exe -> build/dist/
-```
-
-**Tech stack:** Next.js 15 (App Router) · React 19 · TypeScript · Tailwind CSS v4 ·
-Electron · `ws` · `node-pty` · CodeMirror 6 · OpenAI SDK · Cartesia · `xterm.js` ·
-`highlight.js` · `react-markdown` · `lucide-react`.
 
 ---
 
 ## Security
 
-- **Loopback only.** The server binds to `127.0.0.1`. Leave `HOST` as it is. The app has no login of its own and is meant for one person on this PC.
-- **Remote is outbound SSH.** You type the host. The password can be saved. The 2FA code is not. The code CLI then runs as that user on that server.
-- **The CLI runs with your privileges, and permission prompts are skipped** for sessions started here: Claude Code uses `--dangerously-skip-permissions`, Grok uses `--permission-mode bypassPermissions`, Codex uses `--dangerously-bypass-approvals-and-sandbox`.
-- **Update pushes when you press Pushen** on the file list for that repo. The commit message is `Update via Control Center`.
-- **Secrets stay server-side.** The UI reports whether a key is set. The desktop build encrypts keys at rest with Windows DPAPI. The GitHub token is not written into `.git/config`.
+- The server binds to `127.0.0.1`. A request to `/mcp` from anywhere else is refused.
+- There is no login of its own. The app is for one person on this PC.
+- Remote is outbound SSH. The password can be saved. The 2FA code is not.
+- Sessions started here skip the CLI's own permission prompts: Claude Code uses `--dangerously-skip-permissions`, Grok uses `--permission-mode bypassPermissions`, Codex uses `--dangerously-bypass-approvals-and-sandbox`.
+- `github_update_repo` pushes only when `confirm` is true. The button does the same thing after you press **Pushen**.
+- The UI reports whether a key is set. Tool results do not include the key, the token, the password, or the 2FA code.
 
 ---
 
 ## License
 
-MIT — see [LICENSE](LICENSE).
+MIT. See [LICENSE](LICENSE).

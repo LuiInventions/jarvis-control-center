@@ -2,7 +2,7 @@
   "name": "jarvis-control-center",
   "version": "1.9.28",
   "private": true,
-  "description": "Jarvis Control Center for your PC, projects, and code CLIs (Claude Code, Grok, ChatGPT Codex) — runs only on 127.0.0.1.",
+  "description": "Run Claude Code, Grok, or Codex locally, in a GitHub repo, or over SSH. REA and a loopback MCP server are built in. Binds to 127.0.0.1.",
   "author": {
     "name": "LT Digital Concepts",
     "email": "luisklee@proton.me"
