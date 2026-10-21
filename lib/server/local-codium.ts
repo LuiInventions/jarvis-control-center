@@ -197,7 +197,7 @@ async function launch(dir: string): Promise<void> {
   const candidates = editorCandidates();
   if (candidates.length === 0) {
     state.starting = false;
-    state.error = "VS Codium fehlt auf diesem PC (`codium` oder `code`).";
+    state.error = "VS Codium is missing on this PC (`codium` or `code`).";
     return;
   }
   let bin = "";
@@ -218,7 +218,7 @@ async function launch(dir: string): Promise<void> {
   if (!helpText.includes("serve-web")) {
     if (my !== hub().gen) return;
     state.starting = false;
-    state.error = "VS Codium kann `serve-web` nicht. `codium` oder `code` fehlt oder ist zu alt.";
+    state.error = "VS Codium cannot use `serve-web`. `codium` or `code` is missing or too old.";
     return;
   }
   const port = await freePort();
@@ -228,7 +228,7 @@ async function launch(dir: string): Promise<void> {
     args = codiumServeArgs(helpText, port);
   } catch {
     state.starting = false;
-    state.error = "VS Codium konnte keinen lokalen Port wählen.";
+    state.error = "VS Codium could not choose a local port.";
     return;
   }
   const spec = editorSpawnSpec(bin, args);
@@ -252,7 +252,7 @@ async function launch(dir: string): Promise<void> {
     const output = decodeCliOutput(buf);
     const parsed = parseCodiumOutput(output);
     if (parsed.missing) {
-      state.error = "VS Codium fehlt auf diesem PC (`codium` oder `code`).";
+      state.error = "VS Codium is missing on this PC (`codium` or `code`).";
       state.starting = false;
       return;
     }
@@ -272,7 +272,7 @@ async function launch(dir: string): Promise<void> {
       .catch((err: Error) => {
         if (my !== hub().gen) return;
         state.starting = false;
-        state.error = err.message || "VS Codium ist nicht erreichbar.";
+        state.error = err.message || "VS Codium is not reachable.";
       });
   };
   proc.stdout?.on("data", take);
@@ -281,13 +281,13 @@ async function launch(dir: string): Promise<void> {
     if (my !== hub().gen) return;
     if (!state.url) {
       state.starting = false;
-      state.error = state.error || "VS Codium wurde beendet.";
+      state.error = state.error || "VS Codium exited.";
     }
   });
   proc.on("error", (err) => {
     if (my !== hub().gen) return;
     state.starting = false;
-    state.error = `VS Codium konnte nicht gestartet werden: ${err.message}`;
+    state.error = `VS Codium could not be started: ${err.message}`;
   });
 }
 

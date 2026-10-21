@@ -363,12 +363,12 @@ function CreateRepoModal({
             value={githubDir}
             readOnly
             aria-readonly="true"
-            aria-label="Ordner aller geklonten Repos"
+          aria-label="Folder for all cloned repos"
             spellCheck={false}
             className="h-9 w-full cursor-default rounded-md border border-line bg-surface px-3 font-mono text-[12px] text-muted outline-none"
           />
           <span className="text-[11px] text-faint">
-            Neue Repos werden hier angelegt. Der Ordner ist fest.
+          New repos are created here. The folder is fixed.
           </span>
         </label>
 
@@ -588,11 +588,11 @@ function RepoCard({
             </li>
           ))}
           {repo.pendingFiles.length > 8 && (
-            <li className="text-faint">+{repo.pendingFiles.length - 8} weitere</li>
+            <li className="text-faint">+{repo.pendingFiles.length - 8} more</li>
           )}
         </ul>
       ) : repo.pendingPush ? (
-        <p className="text-[11px] text-warn">Commits sind noch nicht auf GitHub.</p>
+        <p className="text-[11px] text-warn">Commits are not on GitHub yet.</p>
       ) : null}
       <div className="mt-auto flex gap-2">
         <Button
@@ -704,21 +704,21 @@ function UpdateModal({ repo, onClose }: { repo: StoredRepo; onClose: () => void 
         <p className="text-xs text-muted">
           {branch ? (
             <>
-              Diese Dateien werden nach{" "}
-              <span className="font-mono text-ink">origin/{branch}</span> gepusht:
+            These files will be pushed to{" "}
+            <span className="font-mono text-ink">origin/{branch}</span>:
             </>
           ) : (
-            "Diese Dateien werden gepusht:"
+          "These files will be pushed:"
           )}
         </p>
         <div className="max-h-72 overflow-auto rounded-md border border-line bg-surface">
           {loading ? (
             <div className="flex items-center justify-center gap-2 px-4 py-8 text-sm text-muted">
-              <Spinner className="size-4" /> Lade Änderungen…
+              <Spinner className="size-4" /> Loading changes…
             </div>
           ) : nothing ? (
             <div className="px-4 py-8 text-center text-sm text-muted">
-              Keine Änderungen zum Pushen.
+            No changes to push.
             </div>
           ) : (
             <ul className="divide-y divide-line">
@@ -743,7 +743,7 @@ function UpdateModal({ repo, onClose }: { repo: StoredRepo; onClose: () => void 
         </div>
         {!loading && !nothing && (
           <p className="text-[11px] text-faint">
-            {files.length} {files.length === 1 ? "Datei" : "Dateien"}
+          {files.length} {files.length === 1 ? "file" : "files"}
           </p>
         )}
         {done && <p className="text-xs text-accent">{done}</p>}
@@ -751,7 +751,7 @@ function UpdateModal({ repo, onClose }: { repo: StoredRepo; onClose: () => void 
       </div>
       <div className="flex justify-end gap-2 border-t border-line px-5 py-3">
         <Button variant="ghost" onClick={onClose}>
-          {done ? "Schließen" : "Abbrechen"}
+          {done ? "Close" : "Cancel"}
         </Button>
         {!done && (
           <Button
@@ -761,7 +761,7 @@ function UpdateModal({ repo, onClose }: { repo: StoredRepo; onClose: () => void 
             loading={pushing}
             disabled={loading || nothing}
           >
-            Pushen
+          Push
           </Button>
         )}
       </div>

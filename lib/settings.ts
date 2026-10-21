@@ -51,7 +51,7 @@ export interface Settings {
   remoteServers?: RemoteServerRecord[];
   /**
    * Saved remote login. Host and user are written only when the user checks
-   * "IP und Passwort speichern". The password itself lives in the secret store.
+   * "Save IP and password". The password itself lives in the secret store.
    */
   remoteHost?: string;
   remoteUser?: string;

@@ -12,8 +12,8 @@ export default function NotFound() {
       }}
     >
       <div style={{ textAlign: "center" }}>
-        <h1 style={{ fontSize: 18, fontWeight: 600 }}>404 — nicht gefunden</h1>
-        <p style={{ fontSize: 14, opacity: 0.7 }}>Diese Seite existiert nicht.</p>
+        <h1 style={{ fontSize: 18, fontWeight: 600 }}>404 — not found</h1>
+        <p style={{ fontSize: 14, opacity: 0.7 }}>This page does not exist.</p>
       </div>
     </div>
   );

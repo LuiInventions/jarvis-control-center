@@ -19,7 +19,7 @@ export function SidebarToggle({ open, onToggle }: { open: boolean; onToggle: () 
   );
 }
 
-/** Bar above the work area. With sessions running, it switches Dateien and Sessions. */
+/** Bar above the work area. With sessions running, it switches Files and Sessions. */
 export function ViewBar({
   sidebarOpen,
   onToggleSidebar,
@@ -42,7 +42,7 @@ export function ViewBar({
         <>
           <div className="flex items-center gap-0.5 rounded-lg bg-raised/80 p-0.5">
             <PaneTab on={pane === "files"} onClick={() => onPane("files")}>
-              Dateien
+              Files
             </PaneTab>
             <PaneTab on={pane === "sessions"} onClick={() => onPane("sessions")}>
               Sessions

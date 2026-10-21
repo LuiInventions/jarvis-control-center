@@ -78,7 +78,7 @@ Remote: remote_saved_servers, then remote_start_saved. A new host uses remote_co
 
 GitHub launcher: github_cloned_repos, github_select_repo, then github_session_start (1 to 6). github_search, github_read_file, github_save_file, github_copy_path, github_upload, and github_upload_images stay inside that clone.
 
-Local: local_get_path, local_select_path, local_session_start (1 to 6). local_search, local_read_file, local_save_file, local_copy_path, local_upload, and local_upload_images stay inside that folder. local_set_projects_dir changes the Settings projects folder, not the selected Ordner.
+Local: local_get_path, local_select_path, local_session_start (1 to 6). local_search, local_read_file, local_save_file, local_copy_path, local_upload, and local_upload_images stay inside that folder. local_set_projects_dir changes the Settings projects folder, not the selected folder.
 
 REA: app_navigate section rea opens the REA tab. Sessions started there use origin rea. list_active_rea_sessions numbers them. get_session_x_info where rea reads one.
 
@@ -643,7 +643,7 @@ export function createJarvisMcpServer(): McpServer {
     {
       title: "Copy a file into a folder",
       description:
-        "Copy one file on this PC into dir. name is the file name inside that folder and cannot contain .. . At most 64 MB. Use this for the same job as Dateien hochladen of a single file.",
+        "Copy one file on this PC into dir. name is the file name inside that folder and cannot contain .. . At most 64 MB. Use this for the same job as Upload files of a single file.",
       inputSchema: {
         source: z.string().describe("Absolute source file."),
         dir: z.string().describe("Absolute destination folder."),
@@ -763,7 +763,7 @@ export function createJarvisMcpServer(): McpServer {
     {
       title: "Choose the remote folder",
       description:
-        "Choose the remote working folder (the Ordner field). ~ is the remote home. The Remote tab follows it. Takes effect for the connected server. Does not create the folder and does not start a session. Start sessions with remote_session_start.",
+      "Choose the remote working folder (the folder field). ~ is the remote home. The Remote tab follows it. Takes effect for the connected server. Does not create the folder and does not start a session. Start sessions with remote_session_start.",
       inputSchema: { dir: z.string().describe("Remote directory. ~ is home.") },
       annotations: { destructiveHint: false, idempotentHint: true, openWorldHint: false },
     },
@@ -814,7 +814,7 @@ export function createJarvisMcpServer(): McpServer {
     {
       title: "Save remote text",
       description:
-        "Save a UTF-8 text file on the SSH server, the same as Speichern in the editor. content is capped at 100000 characters. Pass the full new contents. To save a remote file or folder onto this PC, use remote_download. For a larger or binary upload, use remote_upload.",
+      "Save a UTF-8 text file on the SSH server, the same as Save in the editor. content is capped at 100000 characters. Pass the full new contents. To save a remote file or folder onto this PC, use remote_download. For a larger or binary upload, use remote_upload.",
       inputSchema: {
         path: z.string().describe("Remote file path."),
         content: z.string().describe("Full new UTF-8 contents."),
@@ -860,7 +860,7 @@ export function createJarvisMcpServer(): McpServer {
     {
       title: "Save a remote file or folder",
       description:
-        "Save a remote file, or a remote folder when directory is true, into localDir on this PC. This is Herunterladen. At most 64 MB. localDir must already be a folder. Requires SSH. To save text back onto the server, use remote_write_file.",
+        "Save a remote file, or a remote folder when directory is true, into localDir on this PC. This is Download. At most 64 MB. localDir must already be a folder. Requires SSH. To save text back onto the server, use remote_write_file.",
       inputSchema: {
         remotePath: z.string().describe("Remote file or folder."),
         localDir: z.string().describe("Existing folder on this PC."),

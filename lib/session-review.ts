@@ -27,24 +27,24 @@ export interface ReviewResult {
 }
 
 const STATUS_DE: Record<SessionOutput["status"], string> = {
-  running: "läuft",
-  done: "fertig",
-  error: "Fehler",
+  running: "running",
+  done: "done",
+  error: "error",
 };
 
 /** Build the numbered, plain-text LLM context (pure). */
 export function buildReviewContext(items: ReviewItem[]): string {
-  if (items.length === 0) return "(keine Sessions)";
+  if (items.length === 0) return "(no sessions)";
   return items
     .slice()
     .sort((a, b) => a.number - b.number)
     .map((it) => {
-      const task = it.prompt.trim() || "(ohne Prompt / interaktiv)";
-      const out = it.output.trim() || "(keine Ausgabe)";
+      const task = it.prompt.trim() || "(no prompt / interactive)";
+      const out = it.output.trim() || "(no output)";
       return [
         `#${it.number} · ${it.projectName || "?"} [${STATUS_DE[it.status]}]`,
-        `Auftrag: ${task}`,
-        "Output (Auszug):",
+        `Task: ${task}`,
+        "Output (excerpt):",
         out,
         "---",
       ].join("\n");
@@ -70,49 +70,49 @@ export function parseReviewResult(raw: string): ReviewResult {
     /* fall through to raw fallback */
   }
   return {
-    markdown: text || "_Kein Ergebnis._",
+    markdown: text || "_No result._",
     speech:
-      "Der Review ist fertig. Die Zusammenfassung steht im geöffneten Bericht.",
+      "The review is finished. The summary is in the open report.",
   };
 }
 
 const SPEECH_SYSTEM_PROMPT = [
-  "Du bist der Review-Assistent im Jarvis Control Center.",
-  "Fasse den Stand ALLER Sessions in 1–4 natürlichen deutschen Sätzen zusammen.",
-  "Keine Markdown-Zeichen, keine Aufzählungssymbole, keine Anführungszeichen.",
-  "Gib NUR den gesprochenen Text zurück — sonst nichts.",
+  "You are the review assistant in Jarvis Control Center.",
+  "Summarize the state of ALL sessions in 1–4 natural English sentences.",
+  "No Markdown characters, no bullet symbols, and no quotation marks.",
+  "Return ONLY the spoken text — nothing else.",
 ].join("\n");
 
 const MARKDOWN_SYSTEM_PROMPT = [
-  "Du bist der Review-Assistent im Jarvis Control Center.",
-  "Erstelle einen übersichtlichen deutschen Markdown-Bericht über alle Sessions.",
-  "Stütze dich NUR auf den gezeigten Output — erfinde nichts.",
+  "You are the review assistant in Jarvis Control Center.",
+  "Write a clear English Markdown report of every session.",
+  "Use ONLY the output shown — do not invent anything.",
   "",
-  "FORMAT (genau einhalten):",
-  "Für jede Session eine Sektion:",
+  "FORMAT (follow it exactly):",
+  "One section per session:",
   "",
-  "## Session #N · <Projektname>",
+  "## Session #N · <project name>",
   "",
-  "> <Emoji> **<Status>** — <Projektname>",
+  "> <emoji> **<status>** — <project name>",
   "",
-  "### ✅ Erledigt",
-  "- Punkt 1",
-  "- Punkt 2",
+  "### ✅ Done",
+  "- Point 1",
+  "- Point 2",
   "",
-  "### 🔲 Noch offen",
-  "- Punkt 1",
-  "*(oder: Keine offenen Punkte.)*",
+  "### 🔲 Still open",
+  "- Point 1",
+  "*(or: No open points.)*",
   "",
   "---",
   "",
-  "Status-Emojis: ✅ fertig | ⏳ läuft | ❌ Fehler",
-  "Gib ausschließlich den Markdown-Text zurück, ohne Einleitung und ohne ```-Fences.",
+  "Status emojis: ✅ done | ⏳ running | ❌ error",
+  "Return only the Markdown, with no introduction and no ``` fences.",
 ].join("\n");
 
 /** Generate just the spoken summary (fast, streamed first to the client). */
 export async function generateSpeechSummary(items: ReviewItem[]): Promise<string> {
   if (items.length === 0) {
-    return "Es gibt aktuell keine Sessions zum Reviewen.";
+    return "There are no sessions to review.";
   }
   const client = getAiClient();
   const model = getModel();
@@ -124,13 +124,13 @@ export async function generateSpeechSummary(items: ReviewItem[]): Promise<string
     ],
   });
   const text = (res.choices[0]?.message?.content ?? "").trim();
-  return text || "Der Review ist abgeschlossen.";
+  return text || "The review is complete.";
 }
 
 /** Generate the detailed Markdown report. */
 export async function generateMarkdownReport(items: ReviewItem[]): Promise<string> {
   if (items.length === 0) {
-    return "_Keine Sessions zum Reviewen._";
+    return "_No sessions to review._";
   }
   const client = getAiClient();
   const model = getModel();
@@ -142,15 +142,15 @@ export async function generateMarkdownReport(items: ReviewItem[]): Promise<strin
     ],
   });
   const text = stripFences((res.choices[0]?.message?.content ?? "").trim());
-  return text || "_Kein Ergebnis._";
+  return text || "_No result._";
 }
 
 /** Read all sessions and produce the report + spoken summary (two parallel LLM calls). */
 export async function reviewSessions(items: ReviewItem[]): Promise<ReviewResult> {
   if (items.length === 0) {
     return {
-      markdown: "_Keine Sessions zum Reviewen._",
-      speech: "Es gibt aktuell keine Sessions zum Reviewen.",
+      markdown: "_No sessions to review._",
+      speech: "There are no sessions to review.",
     };
   }
   const [speech, markdown] = await Promise.all([

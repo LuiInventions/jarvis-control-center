@@ -7,12 +7,12 @@ const RESERVED = /^(con|prn|aux|nul|com[1-9]|lpt[1-9])$/i;
 /** Accept a folder name. Reject path pieces and Windows device names. */
 export function validateInstanceName(name: string): string {
   const trimmed = name.trim();
-  if (!trimmed) throw new Error("Name fehlt.");
-  if (trimmed.length > 80) throw new Error("Name ist zu lang.");
+  if (!trimmed) throw new Error("Name is missing.");
+  if (trimmed.length > 80) throw new Error("Name is too long.");
   if (!NAME.test(trimmed)) {
-    throw new Error("Name darf nur Buchstaben, Zahlen, Leerzeichen, Punkt, _ und - enthalten.");
+    throw new Error("Name may only contain letters, numbers, spaces, period, _, and -.");
   }
-  if (RESERVED.test(trimmed)) throw new Error("Dieser Name ist unter Windows reserviert.");
+  if (RESERVED.test(trimmed)) throw new Error("This name is reserved on Windows.");
   return trimmed;
 }
 
@@ -21,7 +21,7 @@ export function instanceDir(root: string, name: string): string {
   const safe = validateInstanceName(name);
   const dir = path.resolve(root, safe);
   if (!isInside(root, dir) || path.resolve(root) === path.resolve(dir)) {
-    throw new Error("Ungültiger Name.");
+    throw new Error("Invalid name.");
   }
   return dir;
 }

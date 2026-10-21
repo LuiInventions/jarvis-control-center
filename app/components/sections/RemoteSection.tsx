@@ -286,18 +286,18 @@ export default function RemoteSection({ command }: { command?: SectionCommand | 
               </div>
             </div>
             <label className="flex flex-col gap-1.5">
-              <span className="text-xs text-muted">Ordner</span>
+              <span className="text-xs text-muted">Folder</span>
               <input
                 value={cwd}
                 onChange={(e) => setCwd(e.target.value)}
                 placeholder="~"
                 spellCheck={false}
-                aria-label="Startordner auf dem Server"
+                aria-label="Start folder on the server"
                 className="h-9 w-full rounded-lg border border-transparent bg-raised/80 px-2.5 font-mono text-[12.5px] text-ink outline-none"
               />
             </label>
             <Button variant="primary" icon={Play} className="w-full" onClick={startEmpty}>
-              Starten
+              Start
             </Button>
             <Button
               variant="secondary"
@@ -308,7 +308,7 @@ export default function RemoteSection({ command }: { command?: SectionCommand | 
                 setUploadOpen(true);
               }}
             >
-              Dateien hochladen
+              Upload files
             </Button>
             <Button
               variant="secondary"
@@ -319,7 +319,7 @@ export default function RemoteSection({ command }: { command?: SectionCommand | 
                 setImageOpen(true);
               }}
             >
-              Bild hochladen
+              Upload images
             </Button>
           </div>
           <RemoteFiles
@@ -334,7 +334,7 @@ export default function RemoteSection({ command }: { command?: SectionCommand | 
               onClick={disconnect}
               className="cursor-pointer text-sm text-muted transition-colors hover:text-danger"
             >
-              Trennen
+              Disconnect
             </button>
             <span className="truncate font-mono text-xs text-running" title={status.host}>
               {status.host}
@@ -423,12 +423,12 @@ export default function RemoteSection({ command }: { command?: SectionCommand | 
                 <h2 className="text-sm font-semibold text-ink">Remote</h2>
                 <p className="text-xs text-faint">
                   {status.needsOtp
-                    ? "Der Server verlangt einen 2FA-Code."
+                    ? "The server is asking for a 2FA code."
                     : status.needsPassword
-                      ? "SSH fragt nach dem Passwort."
+                      ? "SSH is asking for the password."
                       : status.connecting
-                        ? "SSH läuft. Die nächste Abfrage erscheint hier, sobald die Kommandozeile danach fragt."
-                        : "Zuerst user@IP. Passwort und 2FA kommen erst, wenn SSH danach fragt."}
+                        ? "SSH is running. The next prompt appears here when the terminal asks."
+                        : "Start with user@IP. The password and 2FA appear only when SSH asks."}
                 </p>
               </div>
               {status.error && <p className="text-xs text-danger">{status.error}</p>}
@@ -438,7 +438,7 @@ export default function RemoteSection({ command }: { command?: SectionCommand | 
                   {status.servers.length > 0 && (
                     <select
                       value={picked}
-                      aria-label="Gespeicherter Server"
+                      aria-label="Saved server"
                       onChange={(e) => {
                         const id = e.target.value;
                         setPicked(id);
@@ -447,7 +447,7 @@ export default function RemoteSection({ command }: { command?: SectionCommand | 
                       }}
                       className="h-9 w-full cursor-pointer rounded-md border border-line bg-raised px-2.5 text-sm text-ink outline-none focus:border-accent"
                     >
-                      <option value="">Neu</option>
+                      <option value="">New</option>
                       {status.servers.map((s) => (
                         <option key={s.id} value={s.id}>
                           {s.user}@{s.host}
@@ -465,7 +465,7 @@ export default function RemoteSection({ command }: { command?: SectionCommand | 
                     autoComplete="off"
                   />
                   <Button variant="primary" type="submit" className="w-full" loading={busy} disabled={!login.trim()}>
-                    Verbinden
+                    Connect
                   </Button>
                 </>
               )}
@@ -476,14 +476,14 @@ export default function RemoteSection({ command }: { command?: SectionCommand | 
                     type="password"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    placeholder="Passwort"
-                    aria-label="Passwort"
+                    placeholder="Password"
+                    aria-label="Password"
                     autoFocus
                     autoComplete="current-password"
                   />
                   {current?.hasPassword && (
                     <p className="text-xs text-faint">
-                      Leer lassen, um das gespeicherte Passwort zu verwenden.
+                      Leave blank to use the saved password.
                     </p>
                   )}
                   <label className="flex items-center gap-2 text-sm text-ink">
@@ -492,10 +492,10 @@ export default function RemoteSection({ command }: { command?: SectionCommand | 
                       checked={saveLogin}
                       onChange={(e) => setSaveLogin(e.target.checked)}
                     />
-                    IP und Passwort speichern
+                    Save IP and password
                   </label>
                   <Button variant="primary" type="submit" className="w-full" loading={busy}>
-                    Weiter
+                    Continue
                   </Button>
                 </>
               )}
@@ -505,22 +505,22 @@ export default function RemoteSection({ command }: { command?: SectionCommand | 
                   <Input
                     value={otp}
                     onChange={(e) => setOtp(e.target.value)}
-                    placeholder="2FA-Code"
-                    aria-label="2FA-Code"
+                    placeholder="2FA code"
+                    aria-label="2FA code"
                     autoFocus
                     autoComplete="one-time-code"
                     inputMode="numeric"
                     spellCheck={false}
                   />
                   <Button variant="primary" type="submit" className="w-full" loading={busy} disabled={!otp.trim()}>
-                    Senden
+                    Send
                   </Button>
                 </>
               )}
 
               {(status.connecting || status.needsPassword || status.needsOtp) && (
                 <Button type="button" variant="ghost" className="w-full" onClick={disconnect}>
-                  Abbrechen
+                  Cancel
                 </Button>
               )}
             </form>

@@ -47,10 +47,10 @@ export async function POST(req: NextRequest) {
         await Promise.all([
           generateSpeechSummary(items)
             .then((text) => send({ type: "speech", text }))
-            .catch(() => send({ type: "speech", text: "Der Review ist abgeschlossen." })),
+            .catch(() => send({ type: "speech", text: "The review is complete." })),
           generateMarkdownReport(items)
             .then((text) => send({ type: "markdown", text }))
-            .catch(() => send({ type: "markdown", text: "_Kein Ergebnis._" })),
+            .catch(() => send({ type: "markdown", text: "_No result._" })),
         ]);
       } finally {
         controller.close();

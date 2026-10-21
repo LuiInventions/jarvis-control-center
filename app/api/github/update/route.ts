@@ -14,14 +14,14 @@ export async function POST(req: NextRequest) {
     return Response.json({ error: "invalid json" }, { status: 400 });
   }
   const fullName = (body.fullName ?? "").trim();
-  if (!fullName) return Response.json({ error: "fullName fehlt." }, { status: 400 });
+  if (!fullName) return Response.json({ error: "fullName is missing." }, { status: 400 });
 
   const localPath = findRepoPath(readGithubState().repos, fullName);
-  if (!localPath) return Response.json({ error: "Repo nicht gefunden." }, { status: 400 });
+  if (!localPath) return Response.json({ error: "Repo not found." }, { status: 400 });
 
   const token = readGithubToken();
   if (!token)
-    return Response.json({ error: "Nicht mit GitHub verbunden." }, { status: 400 });
+    return Response.json({ error: "Not connected to GitHub." }, { status: 400 });
 
   const res = await gitSyncAndPush(localPath, token, "Update via Control Center");
   if (!res.ok)

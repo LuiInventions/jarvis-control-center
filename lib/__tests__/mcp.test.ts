@@ -100,7 +100,7 @@ describe("mcp drive tools", () => {
     await fs.writeFile(png, Buffer.from([137, 80, 78, 71]));
     const saved = await uploadLocalImages(root, [png]);
     expect(saved.folder).toMatch(/^image_set[a-zA-Z]{8}$/);
-    expect(saved.prompt).toBe(`in ${saved.path} sind die bilder:`);
+    expect(saved.prompt).toBe(`the images are in ${saved.path}:`);
     expect(await fs.readFile(path.join(root, saved.folder, "pic.png"))).toEqual(Buffer.from([137, 80, 78, 71]));
     await removeImageSetCache(saved.folder);
     await fs.rm(root, { recursive: true, force: true });

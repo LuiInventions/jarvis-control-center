@@ -26,7 +26,7 @@ export async function POST(req: NextRequest) {
     return Response.json({ error: "invalid json" }, { status: 400 });
   }
   const token = (body.token ?? "").trim();
-  if (!token) return Response.json({ error: "Token fehlt." }, { status: 400 });
+  if (!token) return Response.json({ error: "Token is missing." }, { status: 400 });
 
   let user;
   let repos;

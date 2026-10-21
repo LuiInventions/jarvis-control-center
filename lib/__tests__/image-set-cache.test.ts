@@ -55,16 +55,16 @@ describe("image set cache", () => {
       linked = false;
     }
     if (linked) {
-      await expect(saveImageSetFile(setName, "link.png", link, root)).rejects.toThrow("Datei fehlt.");
+      await expect(saveImageSetFile(setName, "link.png", link, root)).rejects.toThrow("File is missing.");
     }
-    await expect(saveImageSetFile("nicht-erlaubt", "a.png", source, root)).rejects.toThrow("Nur Bildordner.");
+    await expect(saveImageSetFile("nicht-erlaubt", "a.png", source, root)).rejects.toThrow("Image folders only.");
     await expect(saveImageSetBytes({
       name: setName,
       fileName: "../a.png",
       body: [Buffer.from("x")],
       length: 1,
       root,
-    })).rejects.toThrow("Dateiname ungültig.");
+    })).rejects.toThrow("Invalid file name.");
   });
 
   it("removes the local copy", async () => {

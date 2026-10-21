@@ -25,18 +25,18 @@ export function safeImageFileName(name: string): string | null {
 }
 
 function setDir(name: string, root = imageSetCacheRoot()): string {
-  if (!isImageSetFolder(name)) throw new Error("Nur Bildordner.");
+  if (!isImageSetFolder(name)) throw new Error("Image folders only.");
   const dir = path.resolve(root, name);
   const rel = path.relative(path.resolve(root), dir);
   if (!rel || rel === ".." || rel.startsWith(`..${path.sep}`) || rel.includes(path.sep)) {
-    throw new Error("Nur Bildordner.");
+    throw new Error("Image folders only.");
   }
   return dir;
 }
 
 function fileDest(name: string, fileName: string, root?: string): string {
   const base = safeImageFileName(fileName);
-  if (!base) throw new Error("Dateiname ungültig.");
+  if (!base) throw new Error("Invalid file name.");
   return path.join(setDir(name, root), base);
 }
 
@@ -56,7 +56,7 @@ export async function saveImageSetBytes(options: {
   length: number;
   root?: string;
 }): Promise<string> {
-  if (!Number.isInteger(options.length) || options.length < 0) throw new Error("Länge fehlt.");
+  if (!Number.isInteger(options.length) || options.length < 0) throw new Error("Length is missing.");
   const dest = fileDest(options.name, options.fileName, options.root);
   await fs.promises.mkdir(path.dirname(dest), { recursive: true });
   await replaceSymlink(dest);
@@ -66,11 +66,11 @@ export async function saveImageSetBytes(options: {
     for await (const chunk of options.body) {
       const buf = Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk);
       left -= buf.length;
-      if (left < 0) throw new Error("Übertragung unvollständig.");
+      if (left < 0) throw new Error("Transfer incomplete.");
       if (buf.length === 0) continue;
       if (!out.write(buf)) await once(out, "drain");
     }
-    if (left !== 0) throw new Error("Übertragung unvollständig.");
+    if (left !== 0) throw new Error("Transfer incomplete.");
     out.end();
     await once(out, "finish");
   } catch (err) {
@@ -85,7 +85,7 @@ export async function saveImageSetBytes(options: {
 export async function saveImageSetFile(name: string, fileName: string, source: string, root?: string): Promise<string> {
   const dest = fileDest(name, fileName, root);
   const st = await fs.promises.lstat(source);
-  if (st.isSymbolicLink() || !st.isFile()) throw new Error("Datei fehlt.");
+  if (st.isSymbolicLink() || !st.isFile()) throw new Error("File is missing.");
   await fs.promises.mkdir(path.dirname(dest), { recursive: true });
   await replaceSymlink(dest);
   await fs.promises.copyFile(source, dest);

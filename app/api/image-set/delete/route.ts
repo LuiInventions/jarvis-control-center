@@ -18,13 +18,13 @@ export async function POST(req: NextRequest) {
   const dir = typeof body.dir === "string" ? body.dir.trim() : "";
   const name = typeof body.name === "string" ? body.name.trim() : "";
   if (!kind || !dir || !isImageSetFolder(name)) {
-    return Response.json({ error: "Nur Bildordner." }, { status: 400 });
+    return Response.json({ error: "Image folders only." }, { status: 400 });
   }
   try {
     if (kind === "local") await removeLocalImageSet(dir, name);
     else {
       const port = remoteBrokerPort();
-      if (!port) return Response.json({ error: "Nicht mit dem Server verbunden." }, { status: 409 });
+      if (!port) return Response.json({ error: "Not connected to the server." }, { status: 409 });
       await remoteRemoveSet(port, dir, name);
     }
     await removeImageSetCache(name);

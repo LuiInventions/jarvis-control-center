@@ -85,70 +85,70 @@ export function summarizeBots(runs: BotRun[], now: number): BotSummary {
 /** Shorten a prompt for one-line display; empty prompts read as interactive. */
 function promptLabel(prompt: string): string {
   const p = prompt.trim();
-  if (!p) return "(interaktiv, kein Auftrag)";
+  if (!p) return "(interactive, no task)";
   return p.length > 80 ? `${p.slice(0, 79)}…` : p;
 }
 
 function openReason(status: BotRunStatus): string {
-  if (status === "error") return "Fehler";
-  if (status === "stopped") return "gestoppt";
-  return "offen";
+  if (status === "error") return "Error";
+  if (status === "stopped") return "stopped";
+  return "open";
 }
 
 function line(t: BotTask, suffix = ""): string {
-  return `- **Instanz ${t.instance}** · ${t.projectName} — ${promptLabel(t.prompt)}${suffix}`;
+  return `- **Instance ${t.instance}** · ${t.projectName} — ${promptLabel(t.prompt)}${suffix}`;
 }
 
 /** Render the overview as a Markdown document for display or saving as `.md`. */
 export function botSummaryToMarkdown(summary: BotSummary): string {
-  const parts: string[] = ["# Bot-Übersicht", ""];
+  const parts: string[] = ["# Bot overview", ""];
 
   if (summary.total === 0) {
-    parts.push("_Aktuell keine Bots aktiv und nichts zu berichten._");
+    parts.push("_No active bots and nothing to report._");
     return parts.join("\n");
   }
 
   const d = summary.done.length;
   const r = summary.inProgress.length;
   const o = summary.open.length;
-  parts.push(`_Gesamt ${summary.total} · ${d} erledigt · ${r} in Arbeit · ${o} offen_`, "");
+  parts.push(`_Total ${summary.total} · ${d} done · ${r} in progress · ${o} open_`, "");
 
-  parts.push("## Erledigt");
-  parts.push(summary.done.length ? summary.done.map((t) => line(t)).join("\n") : "_Nichts erledigt._");
+  parts.push("## Done");
+  parts.push(summary.done.length ? summary.done.map((t) => line(t)).join("\n") : "_Nothing done._");
   parts.push("");
 
-  parts.push("## In Arbeit");
+  parts.push("## In progress");
   parts.push(
     summary.inProgress.length
       ? summary.inProgress.map((t) => line(t)).join("\n")
-      : "_Nichts in Arbeit._",
+      : "_Nothing in progress._",
   );
   parts.push("");
 
-  parts.push("## Offen");
+  parts.push("## Open");
   parts.push(
     summary.open.length
       ? summary.open.map((t) => line(t, ` (${openReason(t.status)})`)).join("\n")
-      : "_Nichts offen._",
+      : "_Nothing open._",
   );
 
   return parts.join("\n");
 }
 
 function count(n: number, singular: string, plural: string): string {
-  return `${n === 1 ? "eine" : n} ${n === 1 ? singular : plural}`;
+  return `${n === 1 ? "one" : n} ${n === 1 ? singular : plural}`;
 }
 
-/** A short German sentence for TTS — no Markdown, voice-friendly. */
+/** A short English sentence for TTS — no Markdown, voice-friendly. */
 export function botSummaryToSpeech(summary: BotSummary): string {
   if (summary.total === 0) {
-    return "Es gibt aktuell keine Bot-Aktivität — nichts erledigt, nichts in Arbeit, nichts offen.";
+    return "There is currently no bot activity — nothing done, nothing in progress, nothing open.";
   }
   const d = summary.done.length;
   const r = summary.inProgress.length;
   const o = summary.open.length;
-  const erledigt = `${count(d, "Aufgabe", "Aufgaben")} erledigt`;
-  const arbeit = r === 1 ? "eine läuft noch" : `${r} laufen noch`;
-  const offen = o === 1 ? "eine ist offen" : `${o} sind offen`;
-  return `Die Bots haben ${erledigt}, ${arbeit} und ${offen}.`;
+  const done = `${count(d, "task", "tasks")} done`;
+  const inProgress = r === 1 ? "one still running" : `${r} still running`;
+  const open = o === 1 ? "one still open" : `${o} still open`;
+  return `The bots have ${done}, ${inProgress}, and ${open}.`;
 }

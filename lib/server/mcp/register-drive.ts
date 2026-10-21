@@ -73,7 +73,7 @@ export function registerDriveTools(server: McpServer, run: Run): void {
     {
       title: "Start remote sessions",
       description:
-        "Open 1 to 6 code CLI sessions on the connected SSH server, in path. path becomes the Remote Ordner. Omit path to use the folder already chosen. cli is claude, grok, or codex and defaults to the Settings CLI. Requires remote_status.connected. The same prompt is passed to every session.",
+      "Open 1 to 6 code CLI sessions on the connected SSH server, in path. path becomes the Remote folder. Omit path to use the folder already chosen. cli is claude, grok, or codex and defaults to the Settings CLI. Requires remote_status.connected. The same prompt is passed to every session.",
       inputSchema: {
         path: z.string().optional().describe("Remote folder. ~ is home. Default is the chosen remote folder."),
         count,
@@ -107,7 +107,7 @@ export function registerDriveTools(server: McpServer, run: Run): void {
     {
       title: "Copy a remote path",
       description:
-        "Copy a remote file or folder path to the clipboard, the same as Pfad kopieren. The path is also returned. Does not copy the file itself.",
+        "Copy a remote file or folder path to the clipboard, the same as Copy path. The path is also returned. Does not copy the file itself.",
       inputSchema: { path: z.string().describe("Remote file or folder path.") },
       annotations: { readOnlyHint: true, openWorldHint: false },
     },
@@ -216,7 +216,7 @@ export function registerDriveTools(server: McpServer, run: Run): void {
     {
       title: "Save a repo file",
       description:
-        "Replace a UTF-8 text file inside the selected clone, the same as Speichern. path may be relative to the clone. The parent folder must already exist. content is the full new contents. This does not commit or push. Use github_update_repo for that.",
+      "Replace a UTF-8 text file inside the selected clone, the same as Save. path may be relative to the clone. The parent folder must already exist. content is the full new contents. This does not commit or push. Use github_update_repo for that.",
       inputSchema: {
         path: z.string().describe("File path inside the clone."),
         content: z.string().describe("Full new UTF-8 contents."),
@@ -232,7 +232,7 @@ export function registerDriveTools(server: McpServer, run: Run): void {
     {
       title: "Copy a repo path",
       description:
-        "Copy a file or folder path inside the selected clone to the clipboard, the same as Pfad kopieren. Omit path to copy the clone folder itself. The path is also returned.",
+        "Copy a file or folder path inside the selected clone to the clipboard, the same as Copy path. Omit path to copy the clone folder itself. The path is also returned.",
       inputSchema: {
         path: z.string().optional().describe("File or folder inside the clone. Omit for the clone root."),
         fullName: z.string().optional().describe("owner/repo. Default is the selected clone."),
@@ -280,7 +280,7 @@ export function registerDriveTools(server: McpServer, run: Run): void {
     {
       title: "Get the local path",
       description:
-        "The folder selected in the Local tab (the Ordner). Until one is selected, this is the projects folder from Settings. Read-only. local_set_projects_dir changes the projects folder, not this path.",
+      "The folder selected in the Local tab (the folder). Until one is selected, this is the projects folder from Settings. Read-only. local_set_projects_dir changes the projects folder, not this path.",
       annotations: { readOnlyHint: true, openWorldHint: false },
     },
     async () => run(() => localGetPath()),
@@ -291,7 +291,7 @@ export function registerDriveTools(server: McpServer, run: Run): void {
     {
       title: "Select a local path",
       description:
-        "Choose the Local Ordner. path must be an existing folder on this PC. Shows it in the Local tab and remembers it. Does not start a CLI. Call local_session_start afterwards.",
+      "Choose the Local folder. path must be an existing folder on this PC. Shows it in the Local tab and remembers it. Does not start a CLI. Call local_session_start afterwards.",
       inputSchema: { path: z.string().describe("Existing folder on this PC.") },
       annotations: { destructiveHint: false, idempotentHint: true, openWorldHint: false },
     },
@@ -303,7 +303,7 @@ export function registerDriveTools(server: McpServer, run: Run): void {
     {
       title: "Change the local projects folder",
       description:
-        "Change the projects folder in Settings. path must already exist. This does not change the Local Ordner. Use local_select_path for the folder a local session starts in.",
+      "Change the projects folder in Settings. path must already exist. This does not change the Local folder. Use local_select_path for the folder a local session starts in.",
       inputSchema: { path: z.string().describe("Existing projects folder on this PC.") },
       annotations: { destructiveHint: false, idempotentHint: true, openWorldHint: false },
     },
@@ -360,7 +360,7 @@ export function registerDriveTools(server: McpServer, run: Run): void {
     {
       title: "Save a local file",
       description:
-        "Replace a UTF-8 text file inside the selected Local path, the same as Speichern. path may be relative. The parent folder must already exist. content is the full new contents.",
+      "Replace a UTF-8 text file inside the selected Local path, the same as Save. path may be relative. The parent folder must already exist. content is the full new contents.",
       inputSchema: {
         path: z.string().describe("File path inside the selected Local folder."),
         content: z.string().describe("Full new UTF-8 contents."),
@@ -375,7 +375,7 @@ export function registerDriveTools(server: McpServer, run: Run): void {
     {
       title: "Copy a local path",
       description:
-        "Copy a file or folder path inside the selected Local folder to the clipboard, the same as Pfad kopieren. Omit path to copy the selected folder itself. The path is also returned.",
+        "Copy a file or folder path inside the selected Local folder to the clipboard, the same as Copy path. Omit path to copy the selected folder itself. The path is also returned.",
       inputSchema: { path: z.string().optional().describe("File or folder inside the selected Local path. Omit for that folder.") },
       annotations: { readOnlyHint: true, openWorldHint: false },
     },

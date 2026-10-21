@@ -60,7 +60,7 @@ export async function scanProjects(): Promise<{
     dirents = await fs.readdir(root, { withFileTypes: true });
   } catch (e) {
     throw new Error(
-      `Projektordner nicht lesbar: ${root} — ${(e as Error).message}`,
+      `Projects folder is not readable: ${root} — ${(e as Error).message}`,
     );
   }
   const candidates = dirents.filter(

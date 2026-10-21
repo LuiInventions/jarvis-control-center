@@ -98,22 +98,22 @@ describe("botSummaryToMarkdown", () => {
         0,
       ),
     );
-    expect(md).toContain("# Bot-Übersicht");
-    expect(md).toContain("## Erledigt");
-    expect(md).toContain("## In Arbeit");
-    expect(md).toContain("## Offen");
-    expect(md).toMatch(/Instanz 1.*alpha.*tests schreiben/);
-    expect(md).toMatch(/Instanz 2.*beta.*api bauen/);
-    expect(md).toMatch(/Instanz 3.*gamma.*bug fixen/);
+    expect(md).toContain("# Bot overview");
+    expect(md).toContain("## Done");
+    expect(md).toContain("## In progress");
+    expect(md).toContain("## Open");
+    expect(md).toMatch(/Instance 1.*alpha.*tests schreiben/);
+    expect(md).toMatch(/Instance 2.*beta.*api bauen/);
+    expect(md).toMatch(/Instance 3.*gamma.*bug fixen/);
     // Offen nennt den Grund
-    expect(md).toMatch(/Instanz 3[\s\S]*Fehler/);
+    expect(md).toMatch(/Instance 3[\s\S]*Error/);
   });
 
   it("kennzeichnet gestoppte Bots als gestoppt", () => {
     const md = botSummaryToMarkdown(
       summarizeBots([run({ id: "1", status: "stopped", startedAt: 1 })], 0),
     );
-    expect(md).toMatch(/gestoppt/i);
+    expect(md).toMatch(/stopped/i);
   });
 
   it("zeigt eine Zusammenfassungszeile mit Zählern", () => {
@@ -126,22 +126,22 @@ describe("botSummaryToMarkdown", () => {
         0,
       ),
     );
-    expect(md).toMatch(/1 erledigt/);
-    expect(md).toMatch(/1 in Arbeit/);
-    expect(md).toMatch(/0 offen/);
+    expect(md).toMatch(/1 done/);
+    expect(md).toMatch(/1 in progress/);
+    expect(md).toMatch(/0 open/);
   });
 
   it("beschriftet leere Aufträge als interaktiv", () => {
     const md = botSummaryToMarkdown(
       summarizeBots([run({ id: "1", status: "running", prompt: "", startedAt: 1 })], 0),
     );
-    expect(md).toMatch(/interaktiv/i);
+    expect(md).toMatch(/interactive/i);
   });
 
   it("meldet sauber, wenn keine Bots aktiv sind", () => {
     const md = botSummaryToMarkdown(summarizeBots([], 0));
-    expect(md).toContain("# Bot-Übersicht");
-    expect(md).toMatch(/keine Bots/i);
+    expect(md).toContain("# Bot overview");
+    expect(md).toMatch(/no active bots/i);
   });
 });
 
@@ -159,7 +159,7 @@ describe("botSummaryToSpeech", () => {
       ),
     );
     expect(text).toMatch(/2/);
-    expect(text).toMatch(/erledigt/i);
+    expect(text).toMatch(/done/i);
     expect(text).not.toMatch(/[#*_]/); // keine Markdown-Zeichen für TTS
   });
 
@@ -167,12 +167,12 @@ describe("botSummaryToSpeech", () => {
     const text = botSummaryToSpeech(
       summarizeBots([run({ id: "1", status: "done", startedAt: 1 })], 0),
     );
-    expect(text).toMatch(/eine Aufgabe|1 Aufgabe/i);
+    expect(text).toMatch(/one task/i);
   });
 
   it("sagt klar an, wenn es nichts zu berichten gibt", () => {
     const text = botSummaryToSpeech(summarizeBots([], 0));
-    expect(text).toMatch(/keine/i);
+    expect(text).toMatch(/no bot activity/i);
     expect(text).not.toMatch(/[#*_]/);
   });
 });

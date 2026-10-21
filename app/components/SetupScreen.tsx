@@ -48,7 +48,7 @@ export default function SetupScreen({ onReady }: { onReady: () => void }) {
     setBusy(true);
     setError(null);
     try {
-      if (!projectsDir.trim()) throw new Error("Bitte einen Projektordner wählen.");
+      if (!projectsDir.trim()) throw new Error("Choose a projects folder.");
 
       const set = await fetch("/api/settings", {
         method: "POST",
@@ -76,17 +76,17 @@ export default function SetupScreen({ onReady }: { onReady: () => void }) {
     <div className="flex h-screen items-center justify-center overflow-auto bg-elevated p-6">
       <div className="w-full max-w-lg space-y-4">
         <div className="space-y-1 text-center">
-          <h1 className="text-xl font-semibold text-ink">Willkommen</h1>
+          <h1 className="text-xl font-semibold text-ink">Welcome</h1>
           <p className="text-sm text-faint">
-            Einmalige Einrichtung — alles bleibt lokal auf diesem Rechner.
+            One-time setup. Everything stays on this PC.
           </p>
         </div>
 
         <Card className="space-y-3 p-5">
           <Field
             icon={FolderOpen}
-            title="Projektordner"
-            hint="Erforderlich. Direkte Unterordner werden als lokale Projekte gelistet."
+            title="Projects folder"
+            hint="Required. Direct subfolders are listed as local projects."
           />
           <div className="flex gap-2">
             <Input
@@ -97,7 +97,7 @@ export default function SetupScreen({ onReady }: { onReady: () => void }) {
             />
             {desktop && (
               <Button variant="secondary" icon={FolderOpen} onClick={pick}>
-                Wählen
+                Choose
               </Button>
             )}
           </div>
@@ -106,8 +106,8 @@ export default function SetupScreen({ onReady }: { onReady: () => void }) {
         <Card className="space-y-2 p-5">
           <Field
             icon={Terminal}
-            title="Code-CLI"
-            hint="Welche CLI die Sitzungen startet. Später unter Einstellungen änderbar."
+            title="Code CLI"
+            hint="Which CLI starts the sessions. You can change it later in Settings."
           />
           <div className="grid gap-2">
             {(codeClis.length ? codeClis : [{ id: "claude", label: "Claude Code", bin: "claude", hint: "", installed: true }]).map(
@@ -126,7 +126,7 @@ export default function SetupScreen({ onReady }: { onReady: () => void }) {
                   {c.hint && <div className="text-xs text-faint">{c.hint}</div>}
                   {!c.installed && (
                     <div className="text-xs text-danger">
-                      `{c.bin}` ist nicht im PATH
+                      `{c.bin}` is not on PATH
                     </div>
                   )}
                 </button>
@@ -145,7 +145,7 @@ export default function SetupScreen({ onReady }: { onReady: () => void }) {
           disabled={!projectsDir.trim()}
           className="w-full"
         >
-          Loslegen
+          Get started
         </Button>
       </div>
     </div>

@@ -5,6 +5,15 @@ follow `package.json`. From 1.9.6 each `v*` tag publishes
 `jarvis-control-center-Setup-<version>.exe`. Earlier installers were named
 `cc-control-center-Setup-<version>.exe`.
 
+## 1.9.29 — 2026-10-21
+
+### English
+
+- The window, dialogs, and error messages are in English.
+- Jarvis replies in English.
+- The REA setup prompt is in English. It still checks whether the MCP server or the plugin is already installed, and it does not mention Grok.
+- The feature prompt and the clone prompt are in English. `[feature]` stays for you to fill in.
+
 ## 1.9.28 — 2026-10-19
 
 ### REA

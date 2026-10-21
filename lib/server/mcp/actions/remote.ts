@@ -127,7 +127,7 @@ export function remoteDir(dir: string) {
   return statusView(remoteStatus(), {
     dir: folder,
     ui: { commandId: command.id },
-    note: "The Remote Ordner field follows this folder. It does not create the folder.",
+    note: "The Remote folder field follows this folder. It does not create the folder.",
   });
 }
 

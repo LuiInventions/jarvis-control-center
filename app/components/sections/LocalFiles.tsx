@@ -39,7 +39,7 @@ function parentDir(path: string): string {
 
 /**
  * Local folder list in the same shape as the remote file rail: search, then
- * rows. Clicking a folder writes that path into Ordner.
+ * rows. Clicking a folder writes that path into Folder.
  */
 export default function LocalFiles({
   path,
@@ -51,7 +51,7 @@ export default function LocalFiles({
   path: string;
   onPathChange: (path: string) => void;
   onOpenFile?: (path: string, name: string) => void;
-  /** Hide Zurück once the parent would leave this folder. */
+  /** Hide Back once the parent would leave this folder. */
   floor?: string;
   reloadToken?: number;
 }) {
@@ -74,7 +74,7 @@ export default function LocalFiles({
           if (!cancelled) setListing(data.error ? { error: data.error, entries: [] } : data);
         })
         .catch(() => {
-          if (!cancelled) setListing({ error: "Dateiliste fehlgeschlagen.", entries: [] });
+      if (!cancelled) setListing({ error: "File list failed.", entries: [] });
         });
     }, 200);
     return () => {
@@ -108,8 +108,8 @@ export default function LocalFiles({
         <input
           value={query}
           onChange={(e) => setQuery(e.target.value)}
-          placeholder="Suchen"
-          aria-label="Dateien suchen"
+            placeholder="Search"
+            aria-label="Search files"
           className="h-9 w-full bg-transparent text-sm text-ink outline-none"
         />
       </label>
@@ -121,15 +121,15 @@ export default function LocalFiles({
             className="inline-flex h-8 w-full cursor-pointer items-center justify-center gap-1.5 rounded-lg bg-raised/80 text-[13px] font-medium text-muted transition-colors hover:text-ink"
           >
             <ChevronLeft className="size-4" />
-            Zurück
+          Back
           </button>
         </div>
       )}
       <div className="min-h-0 flex-1 overflow-auto py-1">
-        {!path.trim() && <p className="px-3 py-2 text-xs text-faint">Ordner öffnen, um Dateien zu sehen.</p>}
+        {!path.trim() && <p className="px-3 py-2 text-xs text-faint">Open a folder to see files.</p>}
         {listing.error && <p className="px-3 py-2 text-xs text-danger">{listing.error}</p>}
         {path.trim() && entries.length === 0 && !listing.error && (
-          <p className="px-3 py-2 text-xs text-faint">Keine Einträge.</p>
+          <p className="px-3 py-2 text-xs text-faint">No entries.</p>
         )}
         {entries.map((entry) => (
           <button
@@ -171,7 +171,7 @@ export default function LocalFiles({
               setMenu(null);
             }}
           >
-            Pfad kopieren
+              Copy path
           </button>
           <button
             type="button"
@@ -181,7 +181,7 @@ export default function LocalFiles({
               setMenu(null);
             }}
           >
-            Als Startordner
+            Set as start folder
           </button>
         </div>
       )}

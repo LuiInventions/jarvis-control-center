@@ -28,10 +28,10 @@ export async function POST(req: NextRequest) {
   try {
     body = await req.json();
   } catch {
-    return Response.json({ error: "Ungültige Nachricht." }, { status: 400 });
+    return Response.json({ error: "Invalid message." }, { status: 400 });
   }
   if (typeof body.text !== "string") {
-    return Response.json({ error: "Schreib eine Nachricht." }, { status: 400 });
+    return Response.json({ error: "Write a message." }, { status: 400 });
   }
   const encoder = new TextEncoder();
   const stream = new ReadableStream({

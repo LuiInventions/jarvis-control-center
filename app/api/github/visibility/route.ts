@@ -15,12 +15,12 @@ export async function POST(req: NextRequest) {
   }
 
   const fullName = (body.fullName ?? "").trim();
-  if (!fullName) return Response.json({ error: "Repo fehlt." }, { status: 400 });
+  if (!fullName) return Response.json({ error: "Repo is missing." }, { status: 400 });
   if (typeof body.private !== "boolean")
-    return Response.json({ error: "Sichtbarkeit fehlt." }, { status: 400 });
+    return Response.json({ error: "Visibility is missing." }, { status: 400 });
 
   const token = readGithubToken();
-  if (!token) return Response.json({ error: "Nicht mit GitHub verbunden." }, { status: 400 });
+  if (!token) return Response.json({ error: "Not connected to GitHub." }, { status: 400 });
 
   try {
     await setRepoVisibility(token, fullName, body.private);

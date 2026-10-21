@@ -121,11 +121,11 @@ export async function gitPull(
 ): Promise<{ ok: boolean; message: string }> {
   const porcelain = await gitPorcelain(dir);
   if (porcelain && porcelain.trim().length > 0)
-    return { ok: false, message: "lokale Änderungen — Pull übersprungen" };
+    return { ok: false, message: "local changes — pull skipped" };
   const out = await git(dir, [...buildAuthHeaderArg(token), "pull", "--ff-only"]);
   return out === null
-    ? { ok: false, message: "git pull fehlgeschlagen (divergiert oder kein Upstream?)." }
-    : { ok: true, message: "aktualisiert" };
+    ? { ok: false, message: "git pull failed (diverged, or no upstream?)." }
+    : { ok: true, message: "updated" };
 }
 
 export async function gitCurrentBranch(dir: string): Promise<string | null> {
@@ -275,7 +275,7 @@ export async function gitPublishFolder(
     // `git init -b <branch>` needs Git 2.28+; fall back for older versions.
     if ((await git(dir, ["init", "-b", branch])) === null) {
       if ((await git(dir, ["init"])) === null)
-        return { ok: false, message: "git init fehlgeschlagen." };
+        return { ok: false, message: "git init failed." };
       await git(dir, ["checkout", "-b", branch]);
     }
   }
@@ -287,7 +287,7 @@ export async function gitPublishFolder(
     if ((await git(dir, ["commit", "-m", "Initial commit"])) === null) {
       // Empty folder: still give the remote a starting commit.
       if ((await git(dir, ["commit", "--allow-empty", "-m", "Initial commit"])) === null)
-        return { ok: false, message: "git commit fehlgeschlagen (git user.name/email gesetzt?)." };
+        return { ok: false, message: "git commit failed (is git user.name/email set?)." };
     }
   }
 
@@ -307,8 +307,8 @@ export async function gitPublishFolder(
     curBranch,
   ]);
   return out === null
-    ? { ok: false, message: "git push fehlgeschlagen (Auth oder bereits vorhandene Commits?)." }
-    : { ok: true, message: `Gepusht nach origin/${curBranch}.` };
+    ? { ok: false, message: "git push failed (auth or existing commits?)." }
+    : { ok: true, message: `Pushed to origin/${curBranch}.` };
 }
 
 export async function gitPush(
@@ -316,7 +316,7 @@ export async function gitPush(
   token: string,
 ): Promise<{ ok: boolean; message: string }> {
   const branch = await gitCurrentBranch(dir);
-  if (!branch) return { ok: false, message: "Kein Branch gefunden." };
+  if (!branch) return { ok: false, message: "No branch found." };
   const out = await git(dir, [
     ...buildAuthHeaderArg(token),
     "push",
@@ -324,8 +324,8 @@ export async function gitPush(
     branch,
   ]);
   return out === null
-    ? { ok: false, message: "git push fehlgeschlagen (Konflikt, kein Remote oder Auth?)." }
-    : { ok: true, message: `Gepusht nach origin/${branch}.` };
+    ? { ok: false, message: "git push failed (conflict, no remote, or auth?)." }
+    : { ok: true, message: `Pushed to origin/${branch}.` };
 }
 
 /**
@@ -340,7 +340,7 @@ export async function gitSyncAndPush(
   message: string,
 ): Promise<{ ok: boolean; message: string; conflict?: boolean }> {
   const branch = await gitCurrentBranch(dir);
-  if (!branch) return { ok: false, message: "Kein Branch gefunden." };
+  if (!branch) return { ok: false, message: "No branch found." };
 
   // 1. Commit local changes if the working tree is dirty.
   const porcelain = await gitPorcelain(dir);
@@ -348,13 +348,13 @@ export async function gitSyncAndPush(
   let committed = false;
   if (dirty) {
     if (!(await gitCommitAll(dir, message)))
-      return { ok: false, message: "Commit fehlgeschlagen (git user.name/email gesetzt?)." };
+      return { ok: false, message: "Commit failed (is git user.name/email set?)." };
     committed = true;
   }
 
   // 2. Fetch the latest remote state.
   if ((await git(dir, [...buildAuthHeaderArg(token), "fetch", "origin"])) === null)
-    return { ok: false, message: "git fetch fehlgeschlagen (kein Remote oder Auth?)." };
+    return { ok: false, message: "git fetch failed (no remote, or auth?)." };
 
   // 3. If the remote gained commits, merge them in.
   let merged = false;
@@ -366,7 +366,7 @@ export async function gitSyncAndPush(
       return {
         ok: false,
         conflict: true,
-        message: "Merge-Konflikt — bitte Dateien manuell lösen.",
+        message: "Merge conflict — please resolve files manually.",
       };
     }
     merged = true;
@@ -374,13 +374,13 @@ export async function gitSyncAndPush(
 
   // 4. Push.
   if ((await git(dir, [...buildAuthHeaderArg(token), "push", "origin", branch])) === null)
-    return { ok: false, message: "git push fehlgeschlagen (Auth oder Konflikt?)." };
+    return { ok: false, message: "git push failed (auth or conflict?)." };
 
   // 5. Describe what happened.
   if (!committed && !merged) {
     const aheadRaw = await git(dir, ["rev-list", "--count", `origin/${branch}..HEAD`]);
     const ahead = Number.parseInt((aheadRaw ?? "0").trim(), 10) || 0;
-    if (ahead === 0) return { ok: true, message: "Nichts zu pushen." };
+    if (ahead === 0) return { ok: true, message: "Nothing to push." };
   }
   const parts = [committed && "committed", merged && "merged", "pushed"].filter(Boolean);
   return { ok: true, message: `${parts.join(" + ")} ✓` };

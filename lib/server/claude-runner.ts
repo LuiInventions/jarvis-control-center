@@ -185,7 +185,7 @@ export function handleClaude(ws: WebSocket): void {
         emit({
           type: "blocked",
           until: block.until,
-          message: "Claude-Limit erreicht — Start blockiert bis zum Reset.",
+          message: "Claude limit reached — start blocked until reset.",
         });
         return;
       }

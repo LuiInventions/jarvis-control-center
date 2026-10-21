@@ -33,7 +33,7 @@ export default function FileWorkbench({
   if (files.length === 0) {
     return (
       <div className="grid h-full place-items-center px-6 text-center text-sm text-faint">
-        Datei links anklicken.
+        Click a file on the left.
       </div>
     );
   }
@@ -61,7 +61,7 @@ export default function FileWorkbench({
               </button>
               <button
                 type="button"
-                aria-label={`${file.name} schließen`}
+              aria-label={`Close ${file.name}`}
                 onClick={() => onClose(file.path)}
                 className="mr-1 inline-flex size-5 cursor-pointer items-center justify-center rounded text-faint hover:text-ink"
               >
@@ -112,7 +112,7 @@ function FileBody({
     fetch(url)
       .then(async (r) => {
         const data = (await r.json()) as FileView & { error?: string };
-        if (!r.ok || data.error) throw new Error(data.error || "Datei konnte nicht geöffnet werden.");
+      if (!r.ok || data.error) throw new Error(data.error || "Could not open the file.");
         return data;
       })
       .then((data) => {
@@ -144,7 +144,7 @@ function FileBody({
         body: JSON.stringify({ path: file.path, content: draft }),
       });
       const data = (await r.json()) as { error?: string };
-      if (!r.ok || data.error) throw new Error(data.error || "Speichern fehlgeschlagen.");
+      if (!r.ok || data.error) throw new Error(data.error || "Save failed.");
       setSaved(draft);
     } catch (err) {
       setError((err as Error).message);
@@ -167,7 +167,7 @@ function FileBody({
           <div className="ml-auto flex shrink-0 items-center gap-2">
             {onDownload && (
               <Button variant="secondary" size="sm" icon={Download} onClick={onDownload}>
-                Herunterladen
+              Download
               </Button>
             )}
             {showEditor && (
@@ -179,22 +179,22 @@ function FileBody({
                 disabled={!dirty}
                 onClick={() => void save()}
               >
-                Speichern
+              Save
               </Button>
             )}
           </div>
         )}
       </div>
       <div className="min-h-0 flex-1">
-        {loading && <p className="px-4 py-3 text-sm text-faint">Wird geladen…</p>}
+      {loading && <p className="px-4 py-3 text-sm text-faint">Loading…</p>}
         {error && <p className="px-4 py-3 text-sm text-danger">{error}</p>}
         {view?.tooLarge && (
           <p className="px-4 py-3 text-sm text-muted">
-            {`${view.name} ist zu gross für die Ansicht (${formatBytes(view.size)}).${onDownload ? " Mit Herunterladen auf den PC speichern." : ""}`}
+            {`${view.name} is too large to preview (${formatBytes(view.size)}).${onDownload ? " Use Download to save it to your PC." : ""}`}
           </p>
         )}
         {view && !view.tooLarge && view.kind === "binary" && (
-          <p className="px-4 py-3 text-sm text-muted">{view.name} ist eine Binärdatei ({view.size} Bytes).</p>
+          <p className="px-4 py-3 text-sm text-muted">{view.name} is a binary file ({view.size} Bytes).</p>
         )}
         {view && !view.tooLarge && view.kind === "image" && view.dataUrl && (
           <div className="grid h-full place-items-center overflow-auto p-6">

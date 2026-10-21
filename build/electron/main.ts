@@ -246,8 +246,8 @@ async function boot(): Promise<void> {
     if (isMainFrame && code !== -3) {
       try {
         dialog.showErrorBox(
-          "Seite konnte nicht geladen werden",
-          `URL: ${url}\nFehler: ${desc} (${code})\n\nLog: ${LOG_FILE}`,
+          "The page could not be loaded",
+          `URL: ${url}\nError: ${desc} (${code})\n\nLog: ${LOG_FILE}`,
         );
       } catch {
         /* ignore */

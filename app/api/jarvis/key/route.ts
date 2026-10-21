@@ -8,15 +8,15 @@ export async function POST(req: NextRequest) {
   try {
     body = await req.json();
   } catch {
-    return Response.json({ error: "Ungültige Eingabe." }, { status: 400 });
+    return Response.json({ error: "Invalid input." }, { status: 400 });
   }
   if (typeof body.apiKey !== "string") {
-    return Response.json({ error: "Trag den OpenAI-API-Key ein." }, { status: 400 });
+    return Response.json({ error: "Enter the OpenAI API key." }, { status: 400 });
   }
   try {
     return Response.json({ hasKey: saveJarvisKey(body.apiKey) });
   } catch (err) {
-    const error = err instanceof JarvisRequestError ? err.message : "Der Key konnte nicht gespeichert werden.";
+    const error = err instanceof JarvisRequestError ? err.message : "The key could not be saved.";
     return Response.json({ error }, { status: 400 });
   }
 }

@@ -56,8 +56,8 @@ export async function validateToken(token: string): Promise<GithubUser> {
   if (!res.ok) {
     throw new Error(
       res.status === 401
-        ? "Token ungültig oder abgelaufen."
-        : `GitHub-Fehler (${res.status}).`,
+        ? "Token is invalid or expired."
+        : `GitHub error (${res.status}).`,
     );
   }
   const o = (await res.json()) as Record<string, unknown>;
@@ -96,7 +96,7 @@ export async function createRepo(
   });
   if (!res.ok) {
     throw new Error(
-      await githubErrorMessage(res, `Repo konnte nicht erstellt werden (${res.status}).`),
+      await githubErrorMessage(res, `Could not create repo (${res.status}).`),
     );
   }
   return parseRepo(await res.json());
@@ -115,7 +115,7 @@ export async function setRepoVisibility(
   });
   if (!res.ok) {
     throw new Error(
-      await githubErrorMessage(res, `Sichtbarkeit konnte nicht geändert werden (${res.status}).`),
+      await githubErrorMessage(res, `Could not change visibility (${res.status}).`),
     );
   }
   return parseRepo(await res.json());
@@ -127,7 +127,7 @@ export async function listRepos(token: string): Promise<GithubRepo[]> {
     `${API}/user/repos?per_page=100&affiliation=owner,collaborator&sort=updated`;
   while (url) {
     const res: Response = await fetch(url, { headers: headers(token) });
-    if (!res.ok) throw new Error(`GitHub-Fehler beim Laden der Repos (${res.status}).`);
+    if (!res.ok) throw new Error(`GitHub error while loading repos (${res.status}).`);
     const batch = (await res.json()) as unknown[];
     for (const r of batch) out.push(parseRepo(r));
     url = parseNextPageUrl(res.headers.get("link"));

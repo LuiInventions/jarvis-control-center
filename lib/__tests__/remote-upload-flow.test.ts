@@ -19,7 +19,7 @@ import { planTransfer } from "../remote-transfer";
 describe("upload confirmation", () => {
   it("names one file or one folder and counts several items", () => {
     expect(confirmUploadQuestion([{ rel: "bericht.pdf", size: 12 }], "~/proj")).toBe(
-      "Möchten Sie bericht.pdf (12 B) nach ~/proj hochladen?",
+      "Upload bericht.pdf (12 B) to ~/proj?",
     );
     expect(
       confirmUploadQuestion(
@@ -29,7 +29,7 @@ describe("upload confirmation", () => {
         ],
         "/var/app",
       ),
-    ).toBe("Möchten Sie fotos (30 B) nach /var/app hochladen?");
+    ).toBe("Upload fotos (30 B) to /var/app?");
     expect(
       confirmUploadQuestion(
         [
@@ -38,9 +38,9 @@ describe("upload confirmation", () => {
         ],
         "~",
       ),
-    ).toBe("Möchten Sie 2 Dateien (15 B) nach ~ hochladen?");
+    ).toBe("Upload 2 files (15 B) to ~?");
     expect(confirmUploadQuestion([{ rel: "leer", size: 0, dir: true }], "~")).toBe(
-      "Möchten Sie leer (0 B) nach ~ hochladen?",
+      "Upload leer (0 B) to ~?",
     );
   });
 
@@ -65,7 +65,7 @@ describe("image set", () => {
     expect(imageSetFolderName(Uint8Array.from([0, 1, 2, 3, 4, 5, 6, 7]))).toBe("image_setabcdefgh");
     const random = imageSetFolderName();
     expect(random).toMatch(/^image_set[a-zA-Z]{8}$/);
-    expect(imageSetPrompt("~/work/image_setabcdefgh")).toBe("in ~/work/image_setabcdefgh sind die bilder:");
+    expect(imageSetPrompt("~/work/image_setabcdefgh")).toBe("the images are in ~/work/image_setabcdefgh:");
     expect(
       imageSetNames([
         { name: "image_setb", dir: true },
@@ -87,18 +87,18 @@ describe("image set", () => {
     const many = Array.from({ length: 12 }, (_, i) => ({ name: `${i}.png`, type: "image/png", size: 10 }));
     const capped = takeImages([], many);
     expect(capped.take).toEqual([0, 1, 2, 3, 4, 5, 6, 7, 8, 9]);
-    expect(capped.error).toBe("Maximal 10 Bilder.");
+    expect(capped.error).toBe("At most 10 images.");
 
     const huge = takeImages([], [{ name: "big.png", type: "image/png", size: MAX_IMAGE_BYTES + 1 }]);
     expect(huge.take).toEqual([]);
-    expect(huge.error).toBe("Maximal 2 GB.");
+    expect(huge.error).toBe("At most 2 GB.");
 
     const mixed = takeImages([{ size: 5 }], [
       { name: "note.txt", type: "text/plain", size: 1 },
       { name: "ok.jpg", type: "image/jpeg", size: 4 },
     ]);
     expect(mixed.take).toEqual([1]);
-    expect(mixed.error).toBe("Nur Bilder.");
+    expect(mixed.error).toBe("Images only.");
   });
 
   it("keeps image names unique inside the set", () => {
@@ -142,7 +142,7 @@ describe("image set", () => {
       Array.from({ length: 8 }, (_, i) => ({ name: `${i}.png`, type: "image/png", size: 1 })),
     );
     expect(room.take).toEqual([0, 1, 2, 3, 4, 5, 6]);
-    expect(room.error).toBe("Maximal 10 Bilder.");
+    expect(room.error).toBe("At most 10 images.");
 
     expect(
       imageSetRelPaths("image_setabcdefgh", merged.names, [
@@ -150,6 +150,6 @@ describe("image set", () => {
         { name: "clip", type: "image/jpeg" },
       ]),
     ).toEqual(["image_setabcdefgh/a-2.png", "image_setabcdefgh/clip.jpg"]);
-    expect(imageUploadName("", "image/png", new Set())).toBe("bild.png");
+    expect(imageUploadName("", "image/png", new Set())).toBe("image.png");
   });
 });

@@ -25,19 +25,19 @@ export async function POST(req: NextRequest) {
   }
 
   const token = readGithubToken();
-  if (!token) return Response.json({ error: "Nicht mit GitHub verbunden." }, { status: 400 });
+  if (!token) return Response.json({ error: "Not connected to GitHub." }, { status: 400 });
 
   const name = (body.name ?? "").trim();
   const folderPath = newCloneDir(getConfig().githubDir, name);
-  if (!folderPath) return Response.json({ error: "Repo-Name ungültig." }, { status: 400 });
+  if (!folderPath) return Response.json({ error: "Invalid repo name." }, { status: 400 });
 
   try {
     const st = await fs.stat(folderPath);
     if (!st.isDirectory())
-      return Response.json({ error: "Pfad ist kein Ordner." }, { status: 400 });
+      return Response.json({ error: "Path is not a folder." }, { status: 400 });
     try {
       await fs.access(path.join(folderPath, ".git"));
-      return Response.json({ error: "In diesem Ordner liegt schon ein Repo." }, { status: 400 });
+      return Response.json({ error: "This folder already contains a repo." }, { status: 400 });
     } catch {
       /* empty or not a checkout yet — publish it */
     }
@@ -72,7 +72,7 @@ export async function POST(req: NextRequest) {
     // Repo exists on GitHub but the local push failed — surface why.
     return Response.json(
       {
-        error: `Repo erstellt, aber Push fehlgeschlagen: ${published.message}`,
+        error: `Repo created, but push failed: ${published.message}`,
         state: readGithubState(),
       },
       { status: 207 },

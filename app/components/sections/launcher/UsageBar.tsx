@@ -107,7 +107,7 @@ export default function UsageBar({
       <div className="flex items-center gap-2 border-b border-danger/30 bg-danger/10 px-4 py-2 text-xs">
         <AlertTriangle className="size-3.5 text-danger" />
         <span className="font-medium text-danger">
-          Claude nicht verfügbar bis {fmtReset(blockedUntil)} · noch{" "}
+              Claude unavailable until {fmtReset(blockedUntil)} · {" "}
           {fmtCountdown(blockedUntil - now)}
         </span>
       </div>
@@ -133,7 +133,7 @@ export default function UsageBar({
           ) : null}
         </>
       ) : (
-        <span className="text-faint">noch keine Daten (erscheint beim ersten Run)</span>
+        <span className="text-faint">no data yet (appears after the first run)</span>
       )}
     </div>
   );

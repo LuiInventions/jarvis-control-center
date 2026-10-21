@@ -39,7 +39,7 @@ describe("remote transfer paths", () => {
   it("rejects more than 10 GB and keeps the last duplicate", () => {
     expect(planTransfer([{ rel: "a.txt", size: 0 }]).ok).toBe(true);
     const over = planTransfer([{ rel: "big.bin", size: MAX_TRANSFER_BYTES + 1 }]);
-    expect(over).toEqual({ ok: false, error: "Maximal 10 GB." });
+    expect(over).toEqual({ ok: false, error: "At most 10 GB." });
     const edge = planTransfer([{ rel: "big.bin", size: MAX_TRANSFER_BYTES }]);
     expect(edge.ok).toBe(true);
     const dup = planTransfer([
@@ -53,10 +53,10 @@ describe("remote transfer paths", () => {
       expect(dup.plan.files).toEqual([{ rel: "a.txt", size: 2 }]);
       expect(dup.plan.dirs).toEqual(["leer"]);
     }
-    expect(planTransfer([{ rel: "..", size: 1 }])).toEqual({ ok: false, error: "Dateiname ungültig." });
-    expect(transferSummary(1, 0)).toBe("1 Datei · 0 B");
-    expect(transferSummary(2, 2048)).toBe("2 Dateien · 2.0 KB");
-    expect(transferSummary(0, 0, 1)).toBe("1 Ordner");
+    expect(planTransfer([{ rel: "..", size: 1 }])).toEqual({ ok: false, error: "Invalid file name." });
+    expect(transferSummary(1, 0)).toBe("1 file · 0 B");
+    expect(transferSummary(2, 2048)).toBe("2 files · 2.0 KB");
+    expect(transferSummary(0, 0, 1)).toBe("1 folder");
   });
 
   it("round-trips unicode paths in headers", () => {

@@ -22,8 +22,9 @@ describe("rea prompts", () => {
     expect(REA_SETUP_PROMPT).toContain("REA MCP server");
     expect(REA_SETUP_PROMPT).toContain("Hopper, Ghidra or IDA");
     expect(REA_SETUP_PROMPT).toContain("JavaScript/Electron apps and .NET assemblies");
-    expect(REA_SETUP_PROMPT).toContain("ob der mcp server oder das plugin schon installiert ist");
+    expect(REA_SETUP_PROMPT).toContain("whether the MCP server or the plugin is already installed");
     expect(REA_SETUP_PROMPT.toLowerCase()).not.toContain("grok");
+    expect(REA_SETUP_PROMPT.toLowerCase()).not.toContain("already installed locally");
     expect(REA_SETUP_PROMPT.toLowerCase()).not.toContain("schon lokal");
   });
 
@@ -78,10 +79,10 @@ describe("rea instance folders", () => {
   });
 
   it("rejects path pieces and reserved device names", () => {
-    expect(() => validateInstanceName("")).toThrow(/Name fehlt/);
-    expect(() => validateInstanceName("a/b")).toThrow(/Buchstaben/);
-    expect(() => validateInstanceName("..")).toThrow(/Buchstaben/);
-    expect(() => validateInstanceName("CON")).toThrow(/reserviert/);
+    expect(() => validateInstanceName("")).toThrow(/Name is missing/);
+    expect(() => validateInstanceName("a/b")).toThrow(/letters/);
+    expect(() => validateInstanceName("..")).toThrow(/letters/);
+    expect(() => validateInstanceName("CON")).toThrow(/reserved/);
   });
 });
 

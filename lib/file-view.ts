@@ -81,7 +81,7 @@ export function viewFromBuffer(filePath: string, name: string, buf: Buffer): Fil
 export async function readViewFile(filePath: string): Promise<FileView> {
   const abs = path.resolve(filePath);
   const st = await fs.stat(abs);
-  if (!st.isFile()) throw new Error("Keine Datei.");
+  if (!st.isFile()) throw new Error("Not a file.");
   const name = path.basename(abs);
   const kind = kindForName(name);
   const max = kind === "text" ? TEXT_MAX : MEDIA_MAX;
@@ -97,7 +97,7 @@ export async function writeViewFile(filePath: string, content: string): Promise<
   } catch {
     st = null;
   }
-  if (st?.isDirectory()) throw new Error("Ordner kann nicht gespeichert werden.");
-  if (Buffer.byteLength(content, "utf8") > TEXT_MAX) throw new Error("Datei zu gross.");
+  if (st?.isDirectory()) throw new Error("Cannot save a folder.");
+  if (Buffer.byteLength(content, "utf8") > TEXT_MAX) throw new Error("File is too large.");
   await fs.writeFile(abs, content, "utf8");
 }

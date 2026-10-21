@@ -29,7 +29,7 @@ export function startCodiumProxy(targetPort: number): Promise<{ port: number; cl
     );
     upstream.on("error", () => {
       if (!res.headersSent) res.writeHead(502, { "content-type": "text/plain" });
-      res.end("VS Codium ist nicht erreichbar.");
+      res.end("VS Codium is not reachable.");
     });
     req.pipe(upstream);
   });

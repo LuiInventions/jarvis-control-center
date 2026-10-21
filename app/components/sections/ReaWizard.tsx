@@ -128,12 +128,12 @@ export default function ReaWizard({
     window.setTimeout(() => setCopied(false), 1600);
   };
 
-  const nameLabel = mode === "feature" ? "Wohin soll das Feature?" : "Name des Klons";
+  const nameLabel = mode === "feature" ? "Where should the feature go?" : "Clone name";
   const title =
     step === "apps"
-      ? "Programm wählen"
+      ? "Choose program"
       : step === "mode"
-        ? "Was soll nachgebaut werden?"
+        ? "What should be rebuilt?"
         : step === "name"
           ? nameLabel
           : "Prompt";
@@ -160,20 +160,20 @@ export default function ReaWizard({
             </h2>
             <p className="mt-1 text-xs text-muted">
               {step === "apps"
-                ? "Alle Programme auf diesem PC. Den Namen kannst du auch selbst eintragen."
+                ? "All programs on this PC. You can also enter the name yourself."
                 : step === "mode"
                   ? programName
                   : step === "name"
                     ? mode === "feature"
-                      ? "Name des Projekts, in das die Funktion eingebaut wird."
-                      : "Name des Klons, der gebaut wird."
-                    : "Nur Software, die dir gehört oder die du untersuchen darfst."}
+                      ? "Name of the project where the feature will be added."
+                      : "Name of the clone that will be built."
+                    : "Only software that you own or are allowed to inspect."}
             </p>
           </div>
           <button
             type="button"
             onClick={onClose}
-            aria-label="Schließen"
+            aria-label="Close"
             className="inline-flex size-8 cursor-pointer items-center justify-center rounded-md text-faint hover:bg-raised hover:text-ink"
           >
             <X className="size-4" />
@@ -186,8 +186,8 @@ export default function ReaWizard({
               <input
                 value={query}
                 onChange={(event) => setQuery(event.target.value)}
-                placeholder="Suchen"
-                aria-label="Programm suchen"
+                placeholder="Search"
+                aria-label="Search programs"
                 spellCheck={false}
                 className="h-9 min-w-0 flex-1 rounded-lg border border-transparent bg-raised/80 px-2.5 text-sm text-ink outline-none"
               />
@@ -198,8 +198,8 @@ export default function ReaWizard({
                   setManualName(next);
                   if (selected && next.trim() !== selected.name) setSelectedId(null);
                 }}
-                placeholder="Softwarename manuell"
-                aria-label="Softwarename"
+                placeholder="Manual software name"
+                aria-label="Software name"
                 spellCheck={false}
                 className="h-9 min-w-0 flex-1 rounded-lg border border-transparent bg-raised/80 px-2.5 text-sm text-ink outline-none"
               />
@@ -209,19 +209,19 @@ export default function ReaWizard({
                 onClick={() => setReload((n) => n + 1)}
                 disabled={loading}
               >
-                Aktualisieren
+                Refresh
               </Button>
             </div>
             <div className="min-h-0 flex-1 overflow-auto px-5 pb-4">
               {loading && (
                 <div className="flex items-center gap-2 py-10 text-sm text-muted">
                   <Loader2 className="size-4 animate-spin" />
-                  Programme und Symbole werden gesucht…
+                  Searching programs and icons…
                 </div>
               )}
               {!loading && error && <p className="py-6 text-sm text-danger">{error}</p>}
               {!loading && !error && shown.length === 0 && (
-                <p className="py-6 text-sm text-muted">Keine Programme gefunden.</p>
+                <p className="py-6 text-sm text-muted">No programs found.</p>
               )}
               {!loading && !error && shown.length > 0 && (
                 <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
@@ -252,10 +252,10 @@ export default function ReaWizard({
             </div>
             <div className="flex justify-end gap-2 border-t border-line px-5 py-3">
               <Button variant="secondary" onClick={onClose}>
-                Schließen
+                Close
               </Button>
               <Button variant="primary" disabled={!programName} onClick={() => setStep("mode")}>
-                Weiter
+                Next
               </Button>
             </div>
           </>
@@ -268,9 +268,9 @@ export default function ReaWizard({
               onClick={() => chooseMode("feature")}
               className="cursor-pointer rounded-xl border border-line bg-raised/70 px-4 py-4 text-left hover:border-accent"
             >
-              <div className="text-sm font-medium text-ink">Features kopieren</div>
+              <div className="text-sm font-medium text-ink">Copy features</div>
               <p className="mt-1 text-xs leading-relaxed text-muted">
-                Eine Funktion von {programName} nachvollziehen. Danach den Namen des Zielprojekts eingeben.
+                Trace one feature of {programName}. Then enter the name of the destination project.
               </p>
             </button>
             <button
@@ -278,9 +278,9 @@ export default function ReaWizard({
               onClick={() => chooseMode("clone")}
               className="cursor-pointer rounded-xl border border-line bg-raised/70 px-4 py-4 text-left hover:border-accent"
             >
-              <div className="text-sm font-medium text-ink">Ganze App kopieren</div>
+              <div className="text-sm font-medium text-ink">Copy the whole app</div>
               <p className="mt-1 text-xs leading-relaxed text-muted">
-                Alle Funktionen als eigenen Klon nachbauen. Danach den Namen des Klons eingeben.
+                Rebuild every feature as your own clone. Then enter the clone name.
               </p>
             </button>
             <button
@@ -288,14 +288,14 @@ export default function ReaWizard({
               onClick={() => chooseMode("own")}
               className="cursor-pointer rounded-xl border border-line bg-raised/70 px-4 py-4 text-left hover:border-accent"
             >
-              <div className="text-sm font-medium text-ink">Selber prompten</div>
+              <div className="text-sm font-medium text-ink">Write your own prompt</div>
               <p className="mt-1 text-xs leading-relaxed text-muted">
-                Nur die Rolle des Agenten und {programName} werden eingesetzt. Den Prompt schreibst du selbst.
+                Only the agent role and {programName} are inserted. You write the prompt yourself.
               </p>
             </button>
             <div className="flex justify-end">
               <Button variant="secondary" onClick={() => setStep("apps")}>
-                Zurück
+                Back
               </Button>
             </div>
           </div>
@@ -320,10 +320,10 @@ export default function ReaWizard({
             </label>
             <div className="flex justify-end gap-2">
               <Button variant="secondary" onClick={() => setStep("mode")}>
-                Zurück
+                Back
               </Button>
               <Button variant="primary" disabled={!ownName.trim()} onClick={confirmName}>
-                Weiter
+                Next
               </Button>
             </div>
           </div>
@@ -345,10 +345,10 @@ export default function ReaWizard({
             )}
             <p className="text-xs text-muted">
               {mode === "feature"
-                ? "[feature] im Text durch die gewünschte Funktion ersetzen."
+                ? "Replace [feature] in the text with the desired feature."
                 : mode === "clone"
-                  ? "Der Text folgt dem Namen des Klons."
-                  : "Rolle und Programmname sind eingesetzt. Den weiteren Prompt schreibst du selbst."}
+                  ? "The text follows the clone name."
+                  : "The role and the program name are filled in. You write the rest of the prompt."}
             </p>
             <textarea
               value={text}
@@ -362,13 +362,13 @@ export default function ReaWizard({
             />
             <div className="flex flex-wrap justify-end gap-2">
               <Button variant="secondary" onClick={() => setStep(mode === "own" ? "mode" : "name")}>
-                Zurück
+                Back
               </Button>
               <Button variant="secondary" icon={Copy} onClick={() => void copy()} disabled={!text.trim()}>
-                {copied ? "Kopiert" : "Kopieren"}
+                {copied ? "Copied" : "Copy"}
               </Button>
               <Button variant="secondary" onClick={onClose}>
-                Schließen
+                Close
               </Button>
               <Button
                 variant="primary"
@@ -376,7 +376,7 @@ export default function ReaWizard({
                 disabled={!text.trim() || (mode !== "own" && !ownName.trim())}
                 onClick={() => onStart(text)}
               >
-                Session starten
+                Start session
               </Button>
             </div>
           </div>

@@ -283,7 +283,7 @@ export function openPtySession(input: OpenPtyInput): OpenPtyResult {
       const until = block.until ? new Date(block.until).toLocaleString("de-DE") : "?";
       return {
         ok: false,
-        error: `Claude-Limit erreicht — nicht verfügbar bis ${until}`,
+        error: `Claude limit reached — unavailable until ${until}`,
         exit: true,
       };
     }
@@ -294,7 +294,7 @@ export function openPtySession(input: OpenPtyInput): OpenPtyResult {
   let term: TermHandle;
   if (where === "remote") {
     const port = remoteBrokerPort();
-    if (!port) return { ok: false, error: "Nicht mit dem Server verbunden.", exit: true };
+    if (!port) return { ok: false, error: "Not connected to the server.", exit: true };
     term = openRemoteCli({
       port,
       command: buildRemoteCliCommand({ cwd, bin: spec.bin, args, cli }),

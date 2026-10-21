@@ -30,12 +30,12 @@ export async function expandDroppedPaths(inputs: readonly string[]): Promise<Exp
       continue;
     }
     if (st.isSymbolicLink()) continue;
-    const base = path.basename(abs) || "Ordner";
+    const base = path.basename(abs) || "Folder";
     if (st.isDirectory()) await walkDir(abs, base, items, seen);
     else if (st.isFile()) items.push({ rel: base.replace(/\\/g, "/"), size: st.size, source: abs });
   }
   if (items.length === 0) {
-    throw new Error(failed > 0 ? "Ordner konnte nicht gelesen werden." : "Nichts zum Hochladen.");
+    throw new Error(failed > 0 ? "Could not read the folder." : "Nothing to upload.");
   }
   return items;
 }
@@ -45,7 +45,7 @@ async function walkDir(dir: string, rel: string, items: ExpandedItem[], seen: Se
   try {
     real = await fs.realpath(dir);
   } catch {
-    throw new Error("Ordner konnte nicht gelesen werden.");
+    throw new Error("Could not read the folder.");
   }
   if (seen.has(real)) return;
   seen.add(real);
@@ -54,10 +54,10 @@ async function walkDir(dir: string, rel: string, items: ExpandedItem[], seen: Se
   try {
     dirents = await fs.readdir(dir, { withFileTypes: true });
   } catch {
-    throw new Error("Ordner konnte nicht gelesen werden.");
+    throw new Error("Could not read the folder.");
   }
   for (const ent of dirents) {
-    if (items.length > MAX_ENTRIES) throw new Error("Zu viele Dateien.");
+    if (items.length > MAX_ENTRIES) throw new Error("Too many files.");
     if (ent.isSymbolicLink()) continue;
     const name = ent.name.toString();
     const full = path.join(dir, name);

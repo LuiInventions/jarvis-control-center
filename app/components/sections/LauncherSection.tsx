@@ -740,7 +740,7 @@ export default function LauncherSection({
         headers: { "content-type": "application/json" },
         body: JSON.stringify({ sessions: payload }),
       });
-      if (!r.ok || !r.body) throw new Error(`Review fehlgeschlagen (${r.status})`);
+      if (!r.ok || !r.body) throw new Error(`Review failed (${r.status})`);
 
       const pageId = `rev_${Date.now().toString(36)}${Math.random().toString(36).slice(2, 5)}`;
       const pageTitle = new Date().toLocaleTimeString("de-DE", {
@@ -786,7 +786,7 @@ export default function LauncherSection({
       if (!pageCreated) {
         const page: ReviewPage = {
           id: pageId,
-          markdown: "_Kein Ergebnis._",
+          markdown: "_No result._",
           createdAt: Date.now(),
           title: pageTitle,
         };
@@ -876,13 +876,13 @@ export default function LauncherSection({
                     <select
                       value={selectedGithub?.path ?? ""}
                       onChange={(e) => setProjectPath(e.target.value)}
-                      aria-label="Geklontes Repo"
+                      aria-label="Cloned repo"
                       disabled={githubProjects.length === 0}
                       className="h-9 w-full cursor-pointer rounded-lg border border-transparent bg-raised/80 px-2.5 text-[12.5px] text-ink outline-none disabled:cursor-default disabled:text-faint"
                     >
                       {githubProjects.length === 0 ? (
                         <option value="">
-                          {githubRestoring ? "Repos werden neu geklont …" : "Keine geklonten Repos"}
+                          {githubRestoring ? "Repos are being cloned again …" : "No cloned repos"}
                         </option>
                       ) : (
                         githubProjects.map((p) => (
@@ -895,13 +895,13 @@ export default function LauncherSection({
                   </label>
                 ) : (
                   <p className="rounded-lg bg-raised/80 px-2.5 py-2 text-xs leading-snug text-warn">
-                    Dieser Tab geht nur mit einem verbundenen Repo. Verbinde GitHub im Tab Repos.
+                        This tab only works with a connected repo. Connect GitHub in the Repos tab.
                   </p>
                 )
               ) : (
                 <label className="flex flex-col gap-1.5">
                   <span className="flex items-center justify-between text-xs text-muted">
-                    Ordner
+                    Folder
                     {source === "rea" && onSwitchInstance && (
                       <button
                         type="button"
@@ -915,9 +915,9 @@ export default function LauncherSection({
                   <input
                     value={projectPath}
                     onChange={(e) => setProjectPath(e.target.value)}
-                    placeholder="Lokaler Ordner"
+                    placeholder="Local folder"
                     spellCheck={false}
-                    aria-label="Startordner"
+                    aria-label="Start folder"
                     className="h-9 w-full rounded-lg border border-transparent bg-raised/80 px-2.5 font-mono text-[12.5px] text-ink outline-none"
                   />
                 </label>
@@ -930,7 +930,7 @@ export default function LauncherSection({
                   onClick={startEmpty}
                   disabled={!canStart || startBlocked}
                 >
-                  Starten
+                  Start
                 </Button>
                 {source === "rea" && (
                   <Button
@@ -939,7 +939,7 @@ export default function LauncherSection({
                     onClick={() => setReaOpen(true)}
                     disabled={!canStart || startBlocked}
                   >
-                    REA starten
+                    Start REA
                   </Button>
                 )}
               </div>
@@ -955,7 +955,7 @@ export default function LauncherSection({
                       setUploadOpen(true);
                     }}
                   >
-                    Dateien hochladen
+                    Upload files
                   </Button>
                   <Button
                     variant="secondary"
@@ -967,7 +967,7 @@ export default function LauncherSection({
                       setImageOpen(true);
                     }}
                   >
-                    Bild hochladen
+                    Upload images
                   </Button>
                 </>
               )}
@@ -986,7 +986,7 @@ export default function LauncherSection({
             )}
             <div className="border-t border-glass-border px-3 py-3">
               <Button variant="secondary" icon={FolderOpen} className="w-full" onClick={() => void openFolder()}>
-                Ordner öffnen
+                Open folder
               </Button>
             </div>
           </aside>

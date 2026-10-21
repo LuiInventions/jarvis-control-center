@@ -175,7 +175,7 @@ export default function RemoteUpload({
   };
 
   const chooseFolder = async () => {
-    const folder = await window.cccDesktop?.pickFolder("Ordner hochladen");
+    const folder = await window.cccDesktop?.pickFolder("Upload folder");
     if (folder) {
       void offer(expandLocalPaths([folder]));
       return;
@@ -190,7 +190,7 @@ export default function RemoteUpload({
 
   return (
     <CenterDialog
-      title={phase === "done" ? "Hochgeladen" : phase === "work" ? "Wird hochgeladen" : "Dateien hochladen"}
+      title={phase === "done" ? "Uploaded" : phase === "work" ? "Uploading" : "Upload files"}
       subtitle={dir}
       busy={phase === "work"}
       solid
@@ -201,7 +201,7 @@ export default function RemoteUpload({
           <div
             role="button"
             tabIndex={0}
-            aria-label="Dateien auswählen"
+            aria-label="Choose files"
             onClick={() => openPicker(fileRef.current)}
             onKeyDown={(event) => {
               if (event.key === "Enter" || event.key === " ") {
@@ -244,10 +244,10 @@ export default function RemoteUpload({
             <span>
               <Plus className="mx-auto size-12" />
               <span className="mt-3 block text-sm font-semibold">
-                {reading ? "Ordner wird gelesen…" : "Dateien oder Ordner hier ablegen"}
+                {reading ? "Reading folder…" : "Drop files or folders here"}
               </span>
               <span className="mt-1 block px-6 text-xs text-white/80">
-                Bilder, Videos, Text, Code, PDF und Ordner · Klicken oder Strg+V · maximal 10 GB
+                Images, video, text, code, PDF, and folders · Click or Ctrl+V · 10 GB max
               </span>
             </span>
           </div>
@@ -256,7 +256,7 @@ export default function RemoteUpload({
             onClick={() => void chooseFolder()}
             className="h-10 cursor-pointer rounded-xl bg-[#2c2158] text-sm font-semibold text-white hover:bg-[#3a2c78]"
           >
-            Ordner wählen
+            Choose folder
           </button>
           {error && <p className="text-xs text-danger">{error}</p>}
           {/* No accept attribute: every file type must stay selectable. */}
@@ -298,27 +298,27 @@ export default function RemoteUpload({
               }}
               className="h-11 cursor-pointer rounded-xl bg-[#2c2158] px-5 text-sm font-semibold text-white hover:bg-[#3a2c78]"
             >
-              Zurück
+              Back
             </button>
             <button
               type="button"
               onClick={() => void run()}
               className="h-11 cursor-pointer rounded-xl bg-white px-5 text-sm font-semibold text-[#1a1030] hover:bg-[#efeaff]"
             >
-              Hochladen
+              Upload
             </button>
           </div>
         </div>
       )}
       {phase === "work" && (
         <div>
-          <TransferProgress label="Wird hochgeladen" written={written} total={total} detail={current} />
+          <TransferProgress label="Uploading" written={written} total={total} detail={current} />
           <button type="button" onClick={cancel} className="mx-auto block cursor-pointer text-sm text-white/70 hover:text-white">
-            Abbrechen
+            Cancel
           </button>
         </div>
       )}
-      {phase === "done" && <TransferSuccess title="Hochgeladen" summary={summary} onClose={onClose} />}
+      {phase === "done" && <TransferSuccess title="Uploaded" summary={summary} onClose={onClose} />}
       {phase === "error" && (
         <div className="grid gap-3 py-4 text-center">
           <p className="text-sm text-danger">{error}</p>
@@ -330,7 +330,7 @@ export default function RemoteUpload({
             }}
             className="cursor-pointer text-sm text-white/70 hover:text-white"
           >
-            Zurück
+            Back
           </button>
         </div>
       )}

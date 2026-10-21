@@ -44,7 +44,7 @@ async function readJson(req: IncomingMessage, max: number): Promise<unknown> {
   for await (const chunk of req) {
     const buf = Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk);
     n += buf.length;
-    if (n > max) throw new Error("Anfrage zu gross.");
+    if (n > max) throw new Error("Request is too large.");
     chunks.push(buf);
   }
   return JSON.parse(Buffer.concat(chunks).toString("utf8"));
@@ -66,23 +66,23 @@ function closeSignal(req: IncomingMessage): AbortSignal {
 }
 
 async function normalizeSources(items: unknown): Promise<UploadSource[]> {
-  if (!Array.isArray(items) || items.length === 0) throw new Error("Nichts zum Hochladen.");
+  if (!Array.isArray(items) || items.length === 0) throw new Error("Nothing to upload.");
   const out: UploadSource[] = [];
   for (const raw of items) {
     const item = raw as { rel?: unknown; source?: unknown; dir?: unknown };
-    if (typeof item.rel !== "string" || !item.rel.trim()) throw new Error("Dateiname ungültig.");
+    if (typeof item.rel !== "string" || !item.rel.trim()) throw new Error("Invalid file name.");
     if (item.dir === true) {
       out.push({ rel: item.rel, size: 0, dir: true });
       continue;
     }
-    if (typeof item.source !== "string" || !item.source.trim()) throw new Error("Datei fehlt.");
+    if (typeof item.source !== "string" || !item.source.trim()) throw new Error("File is missing.");
     let st: fs.Stats;
     try {
       st = await fs.promises.lstat(item.source);
     } catch {
-      throw new Error("Datei fehlt.");
+      throw new Error("File is missing.");
     }
-    if (st.isSymbolicLink() || !st.isFile()) throw new Error("Datei fehlt.");
+    if (st.isSymbolicLink() || !st.isFile()) throw new Error("File is missing.");
     out.push({ rel: item.rel, size: st.size, source: item.source });
   }
   return out;
@@ -94,11 +94,11 @@ async function* readTracked(
   onBytes: (n: number) => void,
 ): AsyncGenerator<Buffer> {
   const input = fs.createReadStream(source);
-  const onAbort = () => input.destroy(new Error("Abgebrochen."));
+  const onAbort = () => input.destroy(new Error("Canceled."));
   signal.addEventListener("abort", onAbort);
   try {
     for await (const chunk of input) {
-      if (signal.aborted) throw new Error("Abgebrochen.");
+      if (signal.aborted) throw new Error("Canceled.");
       const buf = Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk);
       if (buf.length === 0) continue;
       onBytes(buf.length);
@@ -124,16 +124,16 @@ async function uploadRemoteSources(
     if (rel && item.source) sources.set(rel, item.source);
   }
   for (const rel of planned.plan.dirs) {
-    if (signal.aborted) throw new Error("Abgebrochen.");
+    if (signal.aborted) throw new Error("Canceled.");
     await remoteMkdir(port, dir, rel, signal);
   }
   let written = 0;
   const total = planned.plan.total;
   onProgress(0, total, "");
   for (const file of planned.plan.files) {
-    if (signal.aborted) throw new Error("Abgebrochen.");
+    if (signal.aborted) throw new Error("Canceled.");
     const source = sources.get(file.rel);
-    if (!source) throw new Error("Datei fehlt.");
+    if (!source) throw new Error("File is missing.");
     await remotePut(
       port,
       dir,
@@ -152,7 +152,7 @@ async function uploadRemoteSources(
 
 async function handleFsUpload(req: IncomingMessage, res: ServerResponse): Promise<void> {
   if (req.method !== "POST") {
-    json(res, 405, { error: "Methode nicht erlaubt." });
+    json(res, 405, { error: "Method not allowed." });
     return;
   }
   let root = "";
@@ -161,23 +161,23 @@ async function handleFsUpload(req: IncomingMessage, res: ServerResponse): Promis
     root = decodePathHeader(header(req, "x-ccc-dir")).trim();
     rel = decodePathHeader(header(req, "x-ccc-rel"));
   } catch {
-    json(res, 400, { error: "Pfad ungültig." });
+    json(res, 400, { error: "Invalid path." });
     return;
   }
   if (!root) {
-    json(res, 400, { error: "Ordner fehlt." });
+    json(res, 400, { error: "Folder is missing." });
     return;
   }
   const kind = header(req, "x-ccc-kind") === "dir" ? "dir" : "file";
   if (kind === "dir") req.resume();
   const len = kind === "dir" ? 0 : Number(header(req, "content-length"));
   if (kind === "file" && (!Number.isInteger(len) || len < 0)) {
-    json(res, 411, { error: "Länge fehlt." });
+    json(res, 411, { error: "Length is missing." });
     req.destroy();
     return;
   }
   if (len > MAX_TRANSFER_BYTES) {
-    json(res, 413, { error: "Maximal 10 GB." });
+    json(res, 413, { error: "Maximum 10 GB." });
     req.destroy();
     return;
   }
@@ -194,14 +194,14 @@ async function handleFsUpload(req: IncomingMessage, res: ServerResponse): Promis
 
 async function handlePaths(req: IncomingMessage, res: ServerResponse, getPort: () => number | null): Promise<void> {
   if (req.method !== "POST") {
-    json(res, 405, { error: "Methode nicht erlaubt." });
+    json(res, 405, { error: "Method not allowed." });
     return;
   }
   const body = (await readJson(req, 32_000_000)) as { kind?: unknown; dir?: unknown; items?: unknown };
   const kind = body.kind === "local" ? "local" : body.kind === "remote" ? "remote" : "";
   const dir = typeof body.dir === "string" ? body.dir.trim() : "";
   if (!kind || !dir) {
-    json(res, 400, { error: "Ordner fehlt." });
+    json(res, 400, { error: "Folder is missing." });
     return;
   }
   const items = await normalizeSources(body.items);
@@ -215,7 +215,7 @@ async function handlePaths(req: IncomingMessage, res: ServerResponse, getPort: (
   if (kind === "remote") {
     port = getPort();
     if (!port) {
-      json(res, 409, { error: "Nicht mit dem Server verbunden." });
+      json(res, 409, { error: "Not connected to the server." });
       return;
     }
   }
@@ -259,25 +259,25 @@ function streamFile(req: IncomingMessage, res: ServerResponse, filePath: string,
 
 async function handleRaw(req: IncomingMessage, res: ServerResponse): Promise<void> {
   if (req.method !== "GET") {
-    json(res, 405, { error: "Methode nicht erlaubt." });
+    json(res, 405, { error: "Method not allowed." });
     return;
   }
   const url = new URL(req.url || "", "http://127.0.0.1");
   const filePath = url.searchParams.get("path")?.trim() || "";
   const mime = imageMime(filePath);
   if (!filePath || !mime) {
-    json(res, 415, { error: "Nur Bilder." });
+    json(res, 415, { error: "Images only." });
     return;
   }
   let st: fs.Stats;
   try {
     st = await fs.promises.stat(filePath);
   } catch {
-    json(res, 404, { error: "Datei fehlt." });
+    json(res, 404, { error: "File is missing." });
     return;
   }
   if (!st.isFile()) {
-    json(res, 404, { error: "Datei fehlt." });
+    json(res, 404, { error: "File is missing." });
     return;
   }
   streamFile(req, res, filePath, mime, st.size);
@@ -285,19 +285,19 @@ async function handleRaw(req: IncomingMessage, res: ServerResponse): Promise<voi
 
 async function handlePreview(req: IncomingMessage, res: ServerResponse, getPort: () => number | null): Promise<void> {
   if (req.method !== "GET") {
-    json(res, 405, { error: "Methode nicht erlaubt." });
+    json(res, 405, { error: "Method not allowed." });
     return;
   }
   const url = new URL(req.url || "", "http://127.0.0.1");
   const filePath = url.searchParams.get("path")?.trim() || "";
   const mime = imageMime(filePath);
   if (!filePath || !mime) {
-    json(res, 415, { error: "Nur Bilder." });
+    json(res, 415, { error: "Images only." });
     return;
   }
   const port = getPort();
   if (!port) {
-    json(res, 409, { error: "Nicht mit dem Server verbunden." });
+    json(res, 409, { error: "Not connected to the server." });
     return;
   }
   const ctrl = new AbortController();
@@ -340,13 +340,13 @@ async function handlePreview(req: IncomingMessage, res: ServerResponse, getPort:
   } finally {
     req.off("aborted", stop);
   }
-  if (!headed && !res.headersSent) json(res, 502, { error: "Bild fehlt." });
+  if (!headed && !res.headersSent) json(res, 502, { error: "Image is missing." });
   else if (!res.writableEnded && !res.destroyed) res.end();
 }
 
 async function handleCacheSave(req: IncomingMessage, res: ServerResponse): Promise<void> {
   if (req.method !== "POST") {
-    json(res, 405, { error: "Methode nicht erlaubt." });
+    json(res, 405, { error: "Method not allowed." });
     return;
   }
   const type = header(req, "content-type");
@@ -356,7 +356,7 @@ async function handleCacheSave(req: IncomingMessage, res: ServerResponse): Promi
     const file = typeof body.file === "string" ? body.file.trim() : "";
     const source = typeof body.source === "string" ? body.source.trim() : "";
     if (!name || !file || !source) {
-      json(res, 400, { error: "Datei fehlt." });
+      json(res, 400, { error: "File is missing." });
       return;
     }
     await saveImageSetFile(name, file, source);
@@ -369,13 +369,13 @@ async function handleCacheSave(req: IncomingMessage, res: ServerResponse): Promi
     setName = decodePathHeader(header(req, "x-ccc-set")).trim();
     fileName = decodePathHeader(header(req, "x-ccc-file")).trim();
   } catch {
-    json(res, 400, { error: "Dateiname ungültig." });
+    json(res, 400, { error: "Invalid file name." });
     return;
   }
   const length = Number(header(req, "content-length"));
   if (!setName || !fileName || !Number.isInteger(length) || length < 0) {
     req.resume();
-    json(res, 400, { error: "Datei fehlt." });
+    json(res, 400, { error: "File is missing." });
     return;
   }
   await saveImageSetBytes({ name: setName, fileName, body: req, length });
@@ -384,7 +384,7 @@ async function handleCacheSave(req: IncomingMessage, res: ServerResponse): Promi
 
 async function handleLocalSet(req: IncomingMessage, res: ServerResponse): Promise<void> {
   if (req.method !== "GET") {
-    json(res, 405, { error: "Methode nicht erlaubt." });
+    json(res, 405, { error: "Method not allowed." });
     return;
   }
   const url = new URL(req.url || "", "http://127.0.0.1");
@@ -408,13 +408,13 @@ export async function handleLocalStream(
     else if (pathOnly === LOCAL_SET) await handleLocalSet(req, res);
     else await handlePreview(req, res, getPort);
   } catch (err) {
-    const message = err instanceof Error ? err.message : "Übertragung fehlgeschlagen.";
-    if (message === "Abgebrochen.") {
+    const message = err instanceof Error ? err.message : "Transfer failed.";
+    if (message === "Canceled.") {
       if (!res.writableEnded) res.end();
       return true;
     }
     if (!res.headersSent) {
-      const status = message === "Nicht mit dem Server verbunden." ? 409 : 400;
+      const status = message === "Not connected to the server." ? 409 : 400;
       json(res, status, { error: message });
     } else if (!res.writableEnded) {
       await writeLine(res, { type: "error", error: message }).catch(() => {});

@@ -56,7 +56,7 @@ def safe_path(raw):
 def do_list(raw):
     path = safe_path(raw)
     if not os.path.isdir(path):
-        return {"path": path, "parent": path, "entries": [], "error": "Kein Ordner."}
+        return {"path": path, "parent": path, "entries": [], "error": "Not a folder."}
     entries = []
     try:
         names = os.listdir(path)
@@ -97,7 +97,7 @@ def do_find(raw, query):
 def do_read(raw):
     path = safe_path(raw)
     if not os.path.isfile(path):
-        return {"error": "Keine Datei.", "path": path}
+        return {"error": "Not a file.", "path": path}
     size = os.path.getsize(path)
     name = os.path.basename(path)
     if size > 8 * 1024 * 1024:
@@ -109,16 +109,16 @@ def do_read(raw):
 def do_write(raw, payload):
     path = safe_path(raw)
     if os.path.isdir(path):
-        return {"error": "Ordner kann nicht gespeichert werden.", "path": path}
+        return {"error": "A folder cannot be saved.", "path": path}
     try:
         data = base64.b64decode(payload)
     except Exception:
-        return {"error": "Inhalt ungueltig.", "path": path}
+        return {"error": "Invalid content.", "path": path}
     if len(data) > 2 * 1024 * 1024:
-        return {"error": "Datei zu gross.", "path": path}
+        return {"error": "File is too large.", "path": path}
     parent = os.path.dirname(path)
     if parent and not os.path.isdir(parent):
-        return {"error": "Ordner fehlt.", "path": path}
+        return {"error": "Folder is missing.", "path": path}
     with open(path, "wb") as handle:
         handle.write(data)
     return {"ok": True, "path": path}
@@ -205,14 +205,14 @@ def write_exact(conn, n, rest, handle):
 
 def do_rmset(root_raw, rel):
     if not re.match(r"^image_set[A-Za-z]+$", rel or ""):
-        return {"error": "Nur Bildordner."}
+        return {"error": "Image folders only."}
     dest = dest_under(root_raw, rel, False)
     if not dest or os.path.islink(dest) or not os.path.isdir(dest):
-        return {"error": "Ordner fehlt."}
+        return {"error": "Folder is missing."}
     root = os.path.realpath(safe_path(root_raw))
     probe = os.path.realpath(dest)
     if probe == root or not inside(root, probe):
-        return {"error": "Pfad ungueltig."}
+        return {"error": "Invalid path."}
     try:
         shutil.rmtree(probe)
     except OSError as exc:
@@ -222,7 +222,7 @@ def do_rmset(root_raw, rel):
 def do_mkdir(root_raw, rel):
     dest = dest_under(root_raw, rel, False)
     if not dest:
-        return {"error": "Pfad ungueltig."}
+        return {"error": "Invalid path."}
     try:
         if not os.path.isdir(dest):
             os.mkdir(dest, 0o755)
@@ -233,7 +233,7 @@ def do_mkdir(root_raw, rel):
 def do_put(conn, root_raw, rel, size, rest):
     if size < 0 or size > MAX_TRANSFER:
         try:
-            conn.sendall(b"ERR Maximal 10 GB.\\n")
+            conn.sendall(b"ERR Maximum 10 GB.\\n")
             conn.close()
         except Exception:
             pass
@@ -242,7 +242,7 @@ def do_put(conn, root_raw, rel, size, rest):
     if not dest:
         discard_exact(conn, size, rest)
         try:
-            conn.sendall(b"ERR Pfad ungueltig.\\n")
+            conn.sendall(b"ERR Invalid path.\\n")
             conn.close()
         except Exception:
             pass
@@ -281,7 +281,7 @@ def do_put(conn, root_raw, rel, size, rest):
 
 def send_file(conn, path):
     if not os.path.isfile(path):
-        conn.sendall(b"ERR Keine Datei.\\n")
+        conn.sendall(b"ERR Not a file.\\n")
         conn.close()
         return
     try:
@@ -291,7 +291,7 @@ def send_file(conn, path):
         conn.close()
         return
     if size > MAX_TRANSFER:
-        conn.sendall(b"ERR Maximal 10 GB.\\n")
+        conn.sendall(b"ERR Maximum 10 GB.\\n")
         conn.close()
         return
     conn.sendall(("OK %d\\n" % size).encode())
@@ -324,7 +324,7 @@ def send_walk(conn, raw):
             conn.close()
             return
         if size > MAX_TRANSFER:
-            conn.sendall(b"ERR Maximal 10 GB.\\n")
+            conn.sendall(b"ERR Maximum 10 GB.\\n")
             conn.close()
             return
         name = os.path.basename(root) or "download"
@@ -333,7 +333,7 @@ def send_walk(conn, raw):
         conn.close()
         return
     if not os.path.isdir(root):
-        conn.sendall(b"ERR Kein Ordner.\\n")
+        conn.sendall(b"ERR Not a folder.\\n")
         conn.close()
         return
     root_real = os.path.realpath(root)
@@ -374,7 +374,7 @@ def send_walk(conn, raw):
                 continue
             total += size
             if total > MAX_TRANSFER:
-                conn.sendall(b"ERR Maximal 10 GB.\\n")
+                conn.sendall(b"ERR Maximum 10 GB.\\n")
                 conn.close()
                 return
             conn.sendall(("FILE %d %s\\n" % (size, b64s(os.path.relpath(full, root)))).encode())
@@ -501,13 +501,13 @@ def handle(conn):
             root = base64.b64decode(parts[1]).decode("utf-8", "replace")
             rel = base64.b64decode(parts[2]).decode("utf-8", "replace")
             if len(parts[3]) > 20:
-                conn.sendall(b"ERR Groesse ungueltig.\\n")
+                conn.sendall(b"ERR Invalid size.\\n")
                 conn.close()
                 return
             try:
                 size = int(parts[3])
             except ValueError:
-                conn.sendall(b"ERR Groesse ungueltig.\\n")
+                conn.sendall(b"ERR Invalid size.\\n")
                 conn.close()
                 return
             do_put(conn, root, rel, size, rest)
@@ -578,7 +578,7 @@ export function brokerRequest(port: number, line: string, timeoutMs = 8000): Pro
     const sock = net.connect(port, "127.0.0.1");
     const timer = setTimeout(() => {
       sock.destroy();
-      reject(new Error("Zeitüberschreitung."));
+      reject(new Error("Timed out."));
     }, timeoutMs);
     let buf = Buffer.alloc(0);
     sock.on("connect", () => sock.write(line.endsWith("\n") ? line : `${line}\n`));
@@ -599,7 +599,7 @@ export function brokerRequest(port: number, line: string, timeoutMs = 8000): Pro
 }
 
 function parseBrokerJson(line: string): RemoteFsListing {
-  if (!line.startsWith("OK ")) throw new Error(line.replace(/^ERR\s?/, "") || "Abfrage fehlgeschlagen.");
+  if (!line.startsWith("OK ")) throw new Error(line.replace(/^ERR\s?/, "") || "Query failed.");
   const data = JSON.parse(line.slice(3)) as RemoteFsListing;
   return { ...data, entries: data.entries ?? [] };
 }
@@ -626,7 +626,7 @@ interface RemoteFilePayload {
 }
 
 function parseBrokerPayload<T>(line: string): T {
-  if (!line.startsWith("OK ")) throw new Error(line.replace(/^ERR\s?/, "") || "Abfrage fehlgeschlagen.");
+  if (!line.startsWith("OK ")) throw new Error(line.replace(/^ERR\s?/, "") || "Query failed.");
   return JSON.parse(line.slice(3)) as T;
 }
 
@@ -649,7 +649,7 @@ export async function remoteWriteFile(port: number, filePath: string, content: s
   const data = parseBrokerPayload<RemoteFilePayload>(
     await brokerRequest(port, `WRITE ${pathB64} ${bodyB64}`, 30000),
   );
-  if (data.error || !data.ok) throw new Error(data.error || "Speichern fehlgeschlagen.");
+  if (data.error || !data.ok) throw new Error(data.error || "Save failed.");
 }
 
 export interface RemoteCliHandle {

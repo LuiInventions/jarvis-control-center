@@ -144,7 +144,7 @@ export async function readFolderPreview(dirPath: string): Promise<FolderPreview>
   try {
     summary = await summarizeFolder(abs);
   } catch (e) {
-    summary = `Zusammenfassung nicht möglich: ${(e as Error).message}`;
+    summary = `Summary unavailable: ${(e as Error).message}`;
   }
   return { kind: "folder", path: abs, name, readme: null, summary };
 }

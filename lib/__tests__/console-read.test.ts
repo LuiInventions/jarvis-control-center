@@ -58,7 +58,7 @@ describe("formatConsoleList", () => {
     startedAt: 0,
   };
   it("reports the empty case", () => {
-    expect(formatConsoleList([])).toMatch(/keine/i);
+    expect(formatConsoleList([])).toMatch(/no running/i);
   });
   it("numbers consoles by instance with status + task", () => {
     const out = formatConsoleList([
@@ -66,9 +66,9 @@ describe("formatConsoleList", () => {
       { ...base, instance: 2, status: "done", prompt: "" },
     ]);
     expect(out).toMatch(/#1/);
-    expect(out).toMatch(/läuft/);
+    expect(out).toMatch(/\[running\]/);
     expect(out).toMatch(/fix the login bug/);
     expect(out).toMatch(/#2/);
-    expect(out).toMatch(/fertig/);
+    expect(out).toMatch(/\[done\]/);
   });
 });

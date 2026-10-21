@@ -1,6 +1,6 @@
 {
   "name": "jarvis-control-center",
-  "version": "1.9.28",
+  "version": "1.9.29",
   "private": true,
   "description": "Run Claude Code, Grok, or Codex locally, in a GitHub repo, or over SSH. REA and a loopback MCP server are built in. Binds to 127.0.0.1.",
   "author": {

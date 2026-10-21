@@ -124,7 +124,7 @@ export function TransferProgress({
         />
       </div>
       <p className="text-xs text-faint">
-        {total > 0 ? `${formatBytes(written)} / ${formatBytes(total)}` : "Wird vorbereitet…"}
+              {total > 0 ? `${formatBytes(written)} / ${formatBytes(total)}` : "Preparing…"}
       </p>
     </div>
   );
@@ -151,7 +151,7 @@ export function TransferSuccess({
       <div className="mt-2 flex gap-2">
         {onOpen && (
           <Button type="button" variant="secondary" onClick={onOpen}>
-            Ordner öffnen
+          Open folder
           </Button>
         )}
         <Button type="button" variant="primary" onClick={onClose}>

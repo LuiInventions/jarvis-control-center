@@ -162,7 +162,7 @@ export default function SettingsSection() {
           <Label
             icon={FolderOpen}
             title="Local Projects folder"
-            hint="The Local tab fills this folder in automatically. Ordner öffnen opens it."
+            hint="The Local tab fills this folder in automatically. Open folder opens it."
           />
           <div className="flex gap-2">
             <Input

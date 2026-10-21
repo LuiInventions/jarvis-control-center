@@ -72,26 +72,26 @@ export async function splitPrompt(
   const context = await projectContext(projectPath);
 
   const instructions = [
-    "Du zerlegst eine große Entwickler-Aufgabe in 1 bis 6 unabhängige, klar",
-    `strukturierte Teil-Aufgaben für PARALLELE ${activeCodeCliLabel()}-Sessions. Jede Teil-Aufgabe`,
-    "muss eigenständig, konkret und direkt umsetzbar sein und darf eine Session nicht",
-    "überfordern. Entscheide selbst die optimale Anzahl: kleine Aufgabe → 1; große oder",
-    "mehrteilige → mehr (maximal 6). Vermeide Überschneidungen und gefährliche",
-    "Parallel-Konflikte an denselben Dateien. Beziehe dich auf den realen Projekt-Stack",
-    "und die Struktur. Erfinde keine Fakten.",
-    "Antworte AUSSCHLIESSLICH mit JSON in genau diesem Format — keine Erklärung,",
-    "keine Code-Fences:",
-    '{"sessions":[{"title":"kurzer Titel","prompt":"vollständiger, umsetzbarer Prompt"}]}',
-    "Behalte die Sprache des Nutzers bei (in der Regel Deutsch).",
+    "Split one large developer task into 1 to 6 independent, clearly",
+    `structured subtasks for PARALLEL ${activeCodeCliLabel()} sessions. Each subtask`,
+    "must stand on its own, be concrete, and be ready to run, and must not",
+    "overload one session. Choose the count yourself: a small task → 1; a large or",
+    "multi-part task → more (at most 6). Avoid overlap and dangerous",
+    "parallel edits to the same files. Use the real project stack",
+    "and structure. Do not invent facts.",
+    "Reply with ONLY JSON in exactly this shape — no explanation,",
+    "and no code fences:",
+    '{"sessions":[{"title":"short title","prompt":"a complete prompt that can be run"}]}',
+    "Keep the user's language (English by default).",
     "",
-    "=== PROJEKT-KONTEXT (JSON) ===",
+    "=== PROJECT CONTEXT (JSON) ===",
     context,
   ].join("\n");
 
   const res = await client.responses.create({
     model,
     instructions,
-    input: `Große Aufgabe des Nutzers:\n${rawPrompt}`,
+    input: `User's large task:\n${rawPrompt}`,
   });
 
   const sessions = parseSplitResponse(res.output_text ?? "");

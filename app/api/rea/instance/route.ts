@@ -14,7 +14,7 @@ export async function POST(req: Request) {
   try {
     body = await req.json();
   } catch {
-    return Response.json({ error: "Ungültige Eingabe." }, { status: 400 });
+    return Response.json({ error: "Invalid input." }, { status: 400 });
   }
 
   if (typeof body.path === "string" && body.path.trim()) {
@@ -23,10 +23,10 @@ export async function POST(req: Request) {
     try {
       st = await fs.promises.stat(dir);
     } catch {
-      return Response.json({ error: "Ordner existiert nicht." }, { status: 400 });
+      return Response.json({ error: "Folder does not exist." }, { status: 400 });
     }
     if (!st.isDirectory()) {
-      return Response.json({ error: "Pfad ist kein Ordner." }, { status: 400 });
+      return Response.json({ error: "Path is not a folder." }, { status: 400 });
     }
     return Response.json({ path: dir });
   }
@@ -42,5 +42,5 @@ export async function POST(req: Request) {
     return Response.json({ path: dir });
   }
 
-  return Response.json({ error: "Name oder Pfad fehlt." }, { status: 400 });
+  return Response.json({ error: "Name or path is missing." }, { status: 400 });
 }

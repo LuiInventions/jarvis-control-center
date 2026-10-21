@@ -19,10 +19,10 @@ export async function fetchReadable(url: string): Promise<ReadablePage> {
   try {
     parsed = new URL(url);
   } catch {
-    throw new Error(`Ungültige URL: ${url}`);
+    throw new Error(`Invalid URL: ${url}`);
   }
   if (parsed.protocol !== "http:" && parsed.protocol !== "https:") {
-    throw new Error(`Nur http(s) erlaubt: ${url}`);
+    throw new Error(`Only http(s) is allowed: ${url}`);
   }
 
   const ctrl = new AbortController();
@@ -34,11 +34,11 @@ export async function fetchReadable(url: string): Promise<ReadablePage> {
       headers: { "user-agent": UA, accept: "text/html,*/*" },
       redirect: "follow",
     });
-    if (!res.ok) throw new Error(`HTTP ${res.status} für ${url}`);
+    if (!res.ok) throw new Error(`HTTP ${res.status} for ${url}`);
     const raw = await res.text();
     html = raw.length > MAX_HTML ? raw.slice(0, MAX_HTML) : raw;
   } catch (e) {
-    throw new Error(`Konnte ${url} nicht laden: ${(e as Error).message}`);
+    throw new Error(`Could not load ${url}: ${(e as Error).message}`);
   } finally {
     clearTimeout(timer);
   }
@@ -58,8 +58,8 @@ export async function fetchReadable(url: string): Promise<ReadablePage> {
   if (!text) {
     text = (document.body?.textContent ?? "").replace(/\s+/g, " ").trim();
   }
-  if (!text) throw new Error(`Kein lesbarer Inhalt auf ${url}`);
-  if (text.length > MAX_TEXT) text = text.slice(0, MAX_TEXT) + "\n…[gekürzt]";
+  if (!text) throw new Error(`No readable content at ${url}`);
+  if (text.length > MAX_TEXT) text = text.slice(0, MAX_TEXT) + "\n…[truncated]";
 
   return { url, title, text };
 }

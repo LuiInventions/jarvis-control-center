@@ -28,7 +28,7 @@ function parentDir(path: string): string {
 
 /**
  * Server files under the Remote rail, from the search field down.
- * The current directory lives in the Ordner field. Clicking a folder writes
+ * The current directory lives in the Folder field. Clicking a folder writes
  * that path there. Right-click copies a path.
  */
 export default function RemoteFiles({
@@ -59,7 +59,7 @@ export default function RemoteFiles({
           if (!cancelled) setListing(data);
         })
         .catch(() => {
-          if (!cancelled) setListing({ error: "Dateiliste fehlgeschlagen.", entries: [] });
+          if (!cancelled) setListing({ error: "Could not list files.", entries: [] });
         });
     }, q ? 250 : 200);
     return () => {
@@ -91,8 +91,8 @@ export default function RemoteFiles({
         <input
           value={query}
           onChange={(e) => setQuery(e.target.value)}
-          placeholder="Suchen"
-          aria-label="Dateien suchen"
+          placeholder="Search"
+          aria-label="Search files"
           className="h-9 w-full bg-transparent text-sm text-ink outline-none"
         />
       </label>
@@ -104,14 +104,14 @@ export default function RemoteFiles({
             className="inline-flex h-8 w-full cursor-pointer items-center justify-center gap-1.5 rounded-lg bg-raised/80 text-[13px] font-medium text-muted transition-colors hover:text-ink"
           >
             <ChevronLeft className="size-4" />
-            Zurück
+            Back
           </button>
         </div>
       )}
       <div className="min-h-0 flex-1 overflow-auto py-1">
         {listing.error && <p className="px-3 py-2 text-xs text-danger">{listing.error}</p>}
         {entries.length === 0 && !listing.error && (
-          <p className="px-3 py-2 text-xs text-faint">Keine Einträge.</p>
+          <p className="px-3 py-2 text-xs text-faint">No entries.</p>
         )}
         {entries.map((entry) => (
           <button
@@ -154,7 +154,7 @@ export default function RemoteFiles({
               void download.start(picked.path, picked.dir, picked.name);
             }}
           >
-            Herunterladen
+            Download
           </button>
           <button
             type="button"
@@ -164,7 +164,7 @@ export default function RemoteFiles({
               setMenu(null);
             }}
           >
-            Pfad kopieren
+            Copy path
           </button>
           <button
             type="button"
@@ -174,7 +174,7 @@ export default function RemoteFiles({
               setMenu(null);
             }}
           >
-            Als Startordner
+            Set as start folder
           </button>
         </div>
       )}

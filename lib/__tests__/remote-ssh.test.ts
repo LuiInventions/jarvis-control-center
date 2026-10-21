@@ -42,10 +42,10 @@ describe("remote ssh login", () => {
   });
 
   it("rejects option injection and a missing user", () => {
-    expect(parseLoginTarget("-oProxyCommand=calc", "luis")).toEqual({ error: "IP ist ungültig." });
-    expect(parseLoginTarget("10.0.0.8", "")).toEqual({ error: "Benutzer fehlt." });
-    expect(parseLoginTarget("10.0.0.8", "lu is")).toEqual({ error: "Benutzer enthält ungültige Zeichen." });
-    expect(parseLoginTarget("999.1.1.1", "luis")).toEqual({ error: "IP ist ungültig." });
+    expect(parseLoginTarget("-oProxyCommand=calc", "luis")).toEqual({ error: "Invalid IP." });
+    expect(parseLoginTarget("10.0.0.8", "")).toEqual({ error: "User name is missing." });
+    expect(parseLoginTarget("10.0.0.8", "lu is")).toEqual({ error: "The user name contains invalid characters." });
+    expect(parseLoginTarget("999.1.1.1", "luis")).toEqual({ error: "Invalid IP." });
   });
 
   it("classifies password, 2FA, host key, and a rejected login", () => {

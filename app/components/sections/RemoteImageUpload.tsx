@@ -56,7 +56,7 @@ async function listLocalSet(name: string): Promise<ListedImage[]> {
   const params = new URLSearchParams({ name });
   const response = await fetch(`/api/image-set/local?${params}`);
   const data = (await response.json()) as { images?: ListedImage[]; error?: string };
-  if (!response.ok) throw new Error(data.error || "Bildordner fehlt.");
+  if (!response.ok) throw new Error(data.error || "Image folder is missing.");
   return data.images ?? [];
 }
 
@@ -92,10 +92,10 @@ async function rememberImageSet(name: string, items: LocalItem[], signal: AbortS
         signal,
       });
       const data = (await response.json()) as { error?: string };
-      if (!response.ok) throw new Error(data.error || "Lokale Kopie fehlgeschlagen.");
+      if (!response.ok) throw new Error(data.error || "Local copy failed.");
       continue;
     }
-    if (!item.source) throw new Error("Datei fehlt.");
+    if (!item.source) throw new Error("File is missing.");
     const response = await fetch("/api/image-set/cache", {
       method: "POST",
       headers: { "content-type": "application/json" },
@@ -103,7 +103,7 @@ async function rememberImageSet(name: string, items: LocalItem[], signal: AbortS
       signal,
     });
     const data = (await response.json()) as { error?: string };
-    if (!response.ok) throw new Error(data.error || "Lokale Kopie fehlgeschlagen.");
+    if (!response.ok) throw new Error(data.error || "Local copy failed.");
   }
 }
 
@@ -134,21 +134,21 @@ function FolderBar({
   return (
     <div className="grid gap-2">
       <div className="flex items-center gap-2">
-        <span className="text-xs font-medium text-muted">Ordner</span>
+        <span className="text-xs font-medium text-muted">Folder</span>
         {allowDelete && selected !== "new" && (
           <button
             type="button"
             onClick={() => onDelete(selected)}
             className="ml-auto h-8 cursor-pointer rounded-md px-2 text-sm text-danger hover:bg-danger/10"
           >
-            Löschen
+            Delete
           </button>
         )}
       </div>
-      <div className="flex gap-2 overflow-x-auto pb-1" role="listbox" aria-label="Bildordner">
+      <div className="flex gap-2 overflow-x-auto pb-1" role="listbox" aria-label="Image folders">
         {allowNew && (
           <button type="button" role="option" aria-selected={selected === "new"} onClick={() => onSelect("new")} className={chipClass(selected === "new")}>
-            Neuer Ordner
+            New folder
           </button>
         )}
         {names.map((name) => (
@@ -164,7 +164,7 @@ function FolderBar({
             {name}
           </button>
         ))}
-        {names.length === 0 && !allowNew && <span className="text-sm text-muted">Noch kein Bildordner</span>}
+        {names.length === 0 && !allowNew && <span className="text-sm text-muted">No image folder yet</span>}
       </div>
     </div>
   );
@@ -173,11 +173,11 @@ function FolderBar({
 function PathBox({ value }: { value: string }) {
   return (
     <label className="grid gap-1 rounded-lg border border-line bg-raised px-3 py-2">
-      <span className="text-xs font-medium text-muted">Pfad</span>
+      <span className="text-xs font-medium text-muted">Path</span>
       <input
         readOnly
         value={value}
-        aria-label="Pfad"
+        aria-label="Path"
         onFocus={(event) => event.currentTarget.select()}
         className="w-full bg-transparent font-mono text-[13px] leading-5 text-ink outline-none"
       />
@@ -198,18 +198,18 @@ function SentenceBox({
 }) {
   return (
     <div className="grid gap-1 rounded-lg border border-line bg-raised px-3 py-2">
-      <span className="text-xs font-medium text-muted">Satz</span>
+      <span className="text-xs font-medium text-muted">Sentence</span>
       <div className="flex items-center gap-2">
         <input
           ref={inputRef}
           readOnly
           value={value}
-          aria-label="Satz"
+          aria-label="Sentence"
           onFocus={(event) => event.currentTarget.select()}
           className="h-9 min-w-0 flex-1 bg-transparent font-mono text-[13px] text-ink outline-none"
         />
         <Button type="button" size="sm" variant="primary" onClick={onCopy}>
-          {copied ? "Kopiert" : "Kopieren"}
+          {copied ? "Copied" : "Copy"}
         </Button>
       </div>
     </div>
@@ -221,7 +221,7 @@ function LocalTile({ image }: { image: ListedImage }) {
   return (
     <div className="relative aspect-square overflow-hidden rounded-md border border-line bg-raised">
       {failed ? (
-        <span className="grid size-full place-items-center px-2 text-center text-xs text-muted">Keine Vorschau</span>
+        <span className="grid size-full place-items-center px-2 text-center text-xs text-muted">No preview</span>
       ) : (
         <img
           src={localPreview(image.path)}
@@ -239,10 +239,10 @@ function LocalTile({ image }: { image: ListedImage }) {
 }
 
 function SetTiles({ images, quietEmpty }: { images: ListedImage[] | undefined; quietEmpty?: boolean }) {
-  if (!images) return <p className="col-span-full text-sm text-muted">Wird geladen…</p>;
+  if (!images) return <p className="col-span-full text-sm text-muted">Loading…</p>;
   if (images.length === 0) {
     if (quietEmpty) return null;
-    return <p className="col-span-full text-sm text-muted">Keine lokale Kopie</p>;
+    return <p className="col-span-full text-sm text-muted">No local copy</p>;
   }
   return (
     <>
@@ -329,7 +329,7 @@ export default function RemoteImageUpload({
       if (incoming.length === 0) return;
       event.preventDefault();
       if (inputRef.current) inputRef.current.value = "";
-      addRef.current(incoming.map((file) => ({ rel: file.name || "bild", size: file.size, file })));
+      addRef.current(incoming.map((file) => ({ rel: file.name || "image", size: file.size, file })));
     };
     window.addEventListener("dragover", allowDrag);
     window.addEventListener("drop", onDrop);
@@ -406,13 +406,13 @@ export default function RemoteImageUpload({
 
   const addFiles = (incoming: LocalItem[]) => {
     if (targetRef.current !== "new" && !containedRef.current) {
-      setError("Bildordner wird gezählt.");
+      setError("Counting image folders.");
       return;
     }
     const candidates = incoming
       .filter((item) => !item.dir)
       .map((item) => ({
-        name: item.rel.split("/").pop() || "bild",
+        name: item.rel.split("/").pop() || "image",
         type: item.file?.type || "",
         size: item.size,
         file: item.file,
@@ -458,18 +458,18 @@ export default function RemoteImageUpload({
   const goNext = () => {
     if (images.length === 0) return;
     if (target !== "new" && !contained) {
-      setError("Bildordner wird gezählt.");
+      setError("Counting image folders.");
       return;
     }
     const held = target === "new" ? [] : contained?.files ?? [];
     if (held.length + images.length > MAX_IMAGE_COUNT) {
-      setError("Maximal 10 Bilder.");
+      setError("At most 10 images.");
       return;
     }
     const folder = target === "new" ? imageSetFolderName() : target;
     const folderPath = childPath(kind, dir, folder);
     if (!folderPath) {
-      setError("Pfad ungültig.");
+      setError("Invalid path.");
       return;
     }
     const rels = imageSetRelPaths(
@@ -540,7 +540,7 @@ export default function RemoteImageUpload({
 
   const askDelete = (name: string) => {
     setDeleteName(name);
-    setQuestion(`Möchten Sie ${name} löschen?`);
+    setQuestion(`Delete ${name}?`);
     setError("");
     setPhase("confirm-delete");
   };
@@ -554,7 +554,7 @@ export default function RemoteImageUpload({
         body: JSON.stringify({ kind, dir, name: deleteName }),
       });
       const data = (await response.json()) as { error?: string };
-      if (!response.ok) throw new Error(data.error || "Löschen fehlgeschlagen.");
+      if (!response.ok) throw new Error(data.error || "Delete failed.");
       if (target === deleteName) setTarget("new");
       setDeleteName("");
       setListNonce((n) => n + 1);
@@ -592,7 +592,7 @@ export default function RemoteImageUpload({
 
   return (
     <CenterDialog
-      title={phase === "copy" ? "Bilder hochgeladen" : phase === "work" ? "Wird hochgeladen" : "Bild hochladen"}
+      title={phase === "copy" ? "Images uploaded" : phase === "work" ? "Uploading" : "Upload images"}
       busy={phase === "work"}
       plain
       wide
@@ -620,21 +620,21 @@ export default function RemoteImageUpload({
           <div className="grid min-h-48 grid-cols-2 gap-2 rounded-lg border border-line bg-canvas p-3 sm:grid-cols-5">
             {target !== "new" && <SetTiles images={pictures} quietEmpty={images.length > 0} />}
             {target === "new" && images.length === 0 && (
-              <p className="col-span-full grid place-items-center text-sm text-muted">Noch keine Bilder</p>
+              <p className="col-span-full grid place-items-center text-sm text-muted">No images yet</p>
             )}
             {images.map((image) => (
               <div key={image.id} className="relative aspect-square overflow-hidden rounded-md border border-line bg-raised">
                 {image.url ? (
                   <img src={image.url} alt={image.name} className="size-full object-cover" />
                 ) : (
-                  <span className="grid size-full place-items-center px-2 text-center text-xs text-muted">Keine Vorschau</span>
+                  <span className="grid size-full place-items-center px-2 text-center text-xs text-muted">No preview</span>
                 )}
                 <span className="absolute inset-x-0 bottom-0 truncate bg-black/65 px-1.5 py-1 text-left text-xs text-white">
                   {image.name}
                 </span>
                 <button
                   type="button"
-                  aria-label={`${image.name} entfernen`}
+                  aria-label={`Remove ${image.name}`}
                   onClick={() => remove(image.id)}
                   className="absolute right-1 top-1 z-10 inline-flex size-8 cursor-pointer items-center justify-center rounded-md bg-surface/90 text-ink hover:bg-surface"
                 >
@@ -645,13 +645,13 @@ export default function RemoteImageUpload({
           </div>
           <input
             ref={inputRef}
-            aria-label="Bilder einfügen"
-            placeholder="Bilder mit Strg+V einfügen"
+            aria-label="Insert images"
+            placeholder="Paste images with Ctrl+V"
             className="h-10 w-full rounded-lg border border-line bg-raised px-3 text-sm text-ink outline-none placeholder:text-faint"
           />
           <p className="text-sm tabular-nums text-muted" aria-live="polite">
             {shown === null ? `… / ${MAX_IMAGE_COUNT}` : `${shown} / ${MAX_IMAGE_COUNT}`}
-            <span className="text-faint"> · maximal 2 GB</span>
+            <span className="text-faint"> · at most 2 GB</span>
           </p>
           {error && (
             <p className="text-sm text-danger" role="alert">
@@ -659,7 +659,7 @@ export default function RemoteImageUpload({
             </p>
           )}
           <Button type="button" variant="primary" className="w-full" disabled={images.length === 0} onClick={goNext}>
-            Weiter
+            Next
           </Button>
         </div>
       )}
@@ -668,10 +668,10 @@ export default function RemoteImageUpload({
           <p className="break-all text-center text-[15px] font-medium leading-relaxed text-ink">{question}</p>
           <div className="flex justify-center gap-3">
             <Button type="button" variant="secondary" onClick={() => setPhase("pick")}>
-              Zurück
+              Back
             </Button>
             <Button type="button" variant="danger" onClick={() => void runDelete()}>
-              Löschen
+              Delete
             </Button>
           </div>
         </div>
@@ -681,30 +681,30 @@ export default function RemoteImageUpload({
           <p className="break-all text-center text-[15px] font-medium leading-relaxed text-ink">{question}</p>
           <div className="flex justify-center gap-3">
             <Button type="button" variant="secondary" onClick={() => setPhase("pick")}>
-              Zurück
+              Back
             </Button>
             <Button type="button" variant="primary" onClick={() => void run()}>
-              Hochladen
+              Upload
             </Button>
           </div>
         </div>
       )}
       {phase === "work" && (
         <div>
-          <TransferProgress label="Wird hochgeladen" written={written} total={total} detail={current} />
+          <TransferProgress label="Uploading" written={written} total={total} detail={current} />
           <button
             type="button"
             onClick={() => abortRef.current?.abort()}
             className="mx-auto block cursor-pointer text-sm text-muted hover:text-ink"
           >
-            Abbrechen
+            Cancel
           </button>
         </div>
       )}
       {phase === "copy" && (
         <div className="grid gap-3 py-1">
           <p className="text-center text-sm font-medium text-ink">
-            {kind === "local" ? "Die Bilder liegen im Ordner." : "Die Bilder liegen auf dem Server."}
+            {kind === "local" ? "The images are in the folder." : "The images are on the server."}
           </p>
           <p className="text-center text-sm text-muted">{summary}</p>
           <PathBox value={boxPath} />
@@ -738,7 +738,7 @@ export default function RemoteImageUpload({
             {error}
           </p>
           <button type="button" onClick={() => setPhase("pick")} className="cursor-pointer text-sm text-muted hover:text-ink">
-            Zurück
+            Back
           </button>
         </div>
       )}

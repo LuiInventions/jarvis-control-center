@@ -29,7 +29,7 @@ const SYNC_CONCURRENCY = 4;
 export async function POST() {
   const token = readGithubToken();
   if (!token) {
-    return Response.json({ error: "Nicht mit GitHub verbunden." }, { status: 400 });
+    return Response.json({ error: "Not connected to GitHub." }, { status: 400 });
   }
 
   let user;

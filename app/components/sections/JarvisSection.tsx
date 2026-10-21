@@ -81,7 +81,7 @@ export default function JarvisSection() {
       })
       .catch(() => {
         if (!stop) {
-          setError("Der Verlauf konnte nicht geladen werden.");
+        setError("Could not load the history.");
           setLoaded(true);
         }
       });
@@ -120,7 +120,7 @@ export default function JarvisSection() {
       if (kind.includes("application/json")) {
         const data = (await res.json()) as { messages?: ChatMessage[]; error?: string };
         if (data.messages) setMessages(data.messages);
-        if (!res.ok) setError(data.error || "Jarvis konnte nicht antworten.");
+        if (!res.ok) setError(data.error || "Jarvis could not respond.");
         return;
       }
       await readEvents(res, (event) => {
@@ -132,13 +132,13 @@ export default function JarvisSection() {
         if (event.type === "error") {
           setLive(null);
           if (event.messages) setMessages(event.messages);
-          setError(event.error || "Jarvis konnte nicht antworten.");
+        setError(event.error || "Jarvis could not respond.");
           return;
         }
         setLive((prev) => applyLive(prev ?? emptyLive(), event));
       });
     } catch {
-      setError("Jarvis ist nicht erreichbar.");
+      setError("Jarvis is not reachable.");
       setText(sent);
       const again = await fetch("/api/jarvis").then((item) => item.json()).catch(() => null);
       if (again?.messages) setMessages(again.messages as ChatMessage[]);
@@ -149,7 +149,7 @@ export default function JarvisSection() {
   }
 
   async function clearHistory() {
-    if (!window.confirm("Den Jarvis-Verlauf löschen?")) return;
+    if (!window.confirm("Clear the Jarvis history?")) return;
     setError("");
     const res = await fetch("/api/jarvis", { method: "DELETE" });
     const data = (await res.json()) as { messages?: ChatMessage[] };
@@ -168,12 +168,12 @@ export default function JarvisSection() {
         body: JSON.stringify({ apiKey: next }),
       });
       const data = (await res.json()) as { hasKey?: boolean; error?: string };
-      if (!res.ok) throw new Error(data.error || "Der Key konnte nicht gespeichert werden.");
+      if (!res.ok) throw new Error(data.error || "Could not save the key.");
       setHasKey(Boolean(data.hasKey));
       setApiKey("");
       setKeyOpen(false);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Der Key konnte nicht gespeichert werden.");
+      setError(err instanceof Error ? err.message : "Could not save the key.");
     } finally {
       setKeyBusy(false);
     }
@@ -191,7 +191,7 @@ export default function JarvisSection() {
             <p className="text-[11px] text-faint">{modelLabel} · kurzes Nachdenken</p>
           </div>
           <Button type="button" variant="ghost" size="sm" onClick={() => setKeyOpen((open) => !open)}>
-            API-Key
+            API key
           </Button>
           <Button
             type="button"
@@ -200,7 +200,7 @@ export default function JarvisSection() {
             onClick={() => void clearHistory()}
             disabled={pending || messages.length === 0}
           >
-            Verlauf löschen
+              Clear history
           </Button>
         </header>
 
@@ -216,23 +216,23 @@ export default function JarvisSection() {
               void saveKey();
             }}
           >
-            <p className="text-sm text-ink">OpenAI-API-Key</p>
-            <p className="mt-1 text-[12px] text-faint">Nur dieser Tab benutzt ihn. Er bleibt auf diesem PC.</p>
+                  <p className="text-sm text-ink">OpenAI API key</p>
+            <p className="mt-1 text-[12px] text-faint">Only this tab uses it. It stays on this PC.</p>
             <div className="mt-3 flex max-w-xl items-center gap-2">
               <Input
                 type="password"
                 autoComplete="off"
                 value={apiKey}
-                placeholder={hasKey ? "Neuen Key eingeben" : "sk-…"}
+                placeholder={hasKey ? "Enter a new key" : "sk-…"}
                 onChange={(event) => setApiKey(event.target.value)}
                 className="font-mono text-[13px]"
               />
               <Button type="submit" variant="primary" loading={keyBusy} disabled={!apiKey.trim()}>
-                Speichern
+                Save
               </Button>
               {hasKey && (
                 <Button type="button" variant="ghost" onClick={() => setKeyOpen(false)}>
-                  Abbrechen
+                Cancel
                 </Button>
               )}
             </div>
@@ -242,7 +242,7 @@ export default function JarvisSection() {
         <div className="min-h-0 flex-1 overflow-auto px-6 py-6" role="log" aria-live="polite">
           {loaded && messages.length === 0 && !pending && hasKey && (
             <p className="max-w-md text-sm leading-relaxed text-muted">
-              Schreib, was die App tun soll. Jarvis liest Sessions, Dateien und Repos über den lokalen MCP-Server.
+            Write what the app should do. Jarvis reads sessions, files, and repos through the local MCP server.
             </p>
           )}
           <div className="mx-auto flex max-w-2xl flex-col gap-6">
@@ -282,7 +282,7 @@ export default function JarvisSection() {
             <Textarea
               rows={1}
               value={text}
-              placeholder={hasKey ? "Nachricht" : "Zuerst den OpenAI-Key eintragen"}
+              placeholder={hasKey ? "Message" : "Enter the OpenAI key first"}
               disabled={pending || !hasKey}
               className="min-h-9 resize-none"
               onChange={(event) => setText(event.target.value)}
@@ -294,7 +294,7 @@ export default function JarvisSection() {
               }}
             />
             <Button type="submit" variant="primary" loading={pending} disabled={!text.trim() || !hasKey}>
-              Senden
+              Send
             </Button>
           </div>
         </form>
@@ -306,13 +306,13 @@ export default function JarvisSection() {
         </header>
         <div ref={logRef} className="min-h-0 flex-1 overflow-auto px-4 py-3 font-mono text-[11px] leading-relaxed">
           {log.length === 0 ? (
-            <p className="text-faint">Werkzeugaufrufe erscheinen hier.</p>
+            <p className="text-faint">Tool calls show up here.</p>
           ) : (
             log.map((line) => (
               <div key={line.id} className="mb-3">
                 <p className="text-faint">
                   {clock(line.at)} {line.dir === "call" ? "→" : "←"} {line.name}
-                  {line.dir === "result" ? `  ${line.ok ? "erfolgreich" : "fehlgeschlagen"}` : ""}
+                      {line.dir === "result" ? `  ${line.ok ? "succeeded" : "failed"}` : ""}
                 </p>
                 {line.body && (
                   <pre className="mt-1 whitespace-pre-wrap break-words text-muted">{pretty(line.body)}</pre>
@@ -331,19 +331,19 @@ function ActivityList({ activity, thinking }: { activity?: Activity[]; thinking?
   if (!thinking && rows.length === 0) return null;
   return (
     <ul className="mb-3 space-y-1 text-[12px]">
-      {thinking && <li className="text-faint motion-safe:animate-pulse">denkt nach</li>}
+          {thinking && <li className="text-faint motion-safe:animate-pulse">thinking</li>}
       {rows.map((row, index) => {
         if (row.kind === "thinking") {
           return (
             <li key={`think_${index}`} className="text-faint">
-              denkt nach
+              thinking
             </li>
           );
         }
         if (row.kind === "reasoning") {
           return (
             <li key={`reason_${index}`} className="text-muted">
-              <span className="text-faint">Überlegung </span>
+                <span className="text-faint">Reasoning </span>
               {row.text}
             </li>
           );
@@ -353,7 +353,7 @@ function ActivityList({ activity, thinking }: { activity?: Activity[]; thinking?
             {row.name}
             <span className={row.ok === false ? "text-danger" : "text-running"}>
               {" "}
-              {row.ok === false ? "fehlgeschlagen" : row.ok === true ? "erfolgreich" : "läuft"}
+                      {row.ok === false ? "failed" : row.ok === true ? "succeeded" : "running"}
             </span>
           </li>
         );

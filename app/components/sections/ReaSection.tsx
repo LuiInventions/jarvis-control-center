@@ -70,7 +70,7 @@ export default function ReaSection({ command }: { command?: SectionCommand | nul
         body: JSON.stringify({ name }),
       });
       const d = (await r.json()) as { path?: string; error?: string };
-      if (!r.ok || !d.path) throw new Error(d.error || "Instanz konnte nicht erstellt werden.");
+      if (!r.ok || !d.path) throw new Error(d.error || "Could not create instance.");
       setDir(d.path);
       setPhase("setup");
     } catch (err) {
@@ -90,7 +90,7 @@ export default function ReaSection({ command }: { command?: SectionCommand | nul
         body: JSON.stringify({ path: pathInput }),
       });
       const d = (await r.json()) as { path?: string; error?: string };
-      if (!r.ok || !d.path) throw new Error(d.error || "Ordner ungültig.");
+      if (!r.ok || !d.path) throw new Error(d.error || "Invalid folder.");
       setDir(d.path);
       setPhase("setup");
     } catch (err) {
@@ -101,7 +101,7 @@ export default function ReaSection({ command }: { command?: SectionCommand | nul
   };
 
   const pickFolder = async () => {
-    const picked = await window.cccDesktop?.pickFolder?.("REA-Ordner");
+    const picked = await window.cccDesktop?.pickFolder?.("REA folder");
     if (picked) setPathInput(picked);
   };
 
@@ -127,7 +127,7 @@ export default function ReaSection({ command }: { command?: SectionCommand | nul
 
   if (phase === "loading") {
     return (
-      <div className="grid h-full place-items-center text-sm text-muted">REA wird geladen…</div>
+    <div className="grid h-full place-items-center text-sm text-muted">Loading REA…</div>
     );
   }
 
@@ -160,16 +160,16 @@ export default function ReaSection({ command }: { command?: SectionCommand | nul
         />
         <div className="flex flex-wrap justify-end gap-2">
           <Button variant="secondary" onClick={() => setPhase("choose")}>
-            Zurück
+            Back
           </Button>
           <Button variant="secondary" icon={Copy} onClick={() => void copySetup()}>
-            {copied ? "Kopiert" : "Kopieren"}
+            {copied ? "Copied" : "Copy"}
           </Button>
           <Button variant="secondary" onClick={() => openWork(false)}>
-            Arbeitsfläche öffnen
+            Open workspace
           </Button>
           <Button variant="primary" icon={Play} onClick={() => openWork(true)}>
-            Setup jetzt starten
+            Start setup now
           </Button>
         </div>
       </div>
@@ -181,7 +181,7 @@ export default function ReaSection({ command }: { command?: SectionCommand | nul
       <div className="w-full max-w-3xl">
         <h2 className="text-sm font-semibold text-ink">REA</h2>
         <p className="mt-1 text-sm text-muted">
-          Neue Instanz anlegen oder einen Ordner wählen, in dem REA schon liegt.
+              Create a new instance or choose a folder that already contains REA.
         </p>
         <div className="mt-4 grid gap-4 md:grid-cols-2">
           <section className="glass-pane flex flex-col gap-3 rounded-xl border p-4">
@@ -211,19 +211,19 @@ export default function ReaSection({ command }: { command?: SectionCommand | nul
           <section className="glass-pane flex flex-col gap-3 rounded-xl border p-4">
             <div className="flex items-center gap-2 text-sm font-medium text-ink">
               <FolderOpen className="size-4 text-accent" />
-              Pfad eingeben
+            Enter path
             </div>
             <input
               value={pathInput}
               onChange={(event) => setPathInput(event.target.value)}
-              placeholder="Ordner auf diesem PC"
-              aria-label="REA-Ordner"
+                placeholder="Folder on this PC"
+                aria-label="REA folder"
               spellCheck={false}
               className="h-9 rounded-lg border border-transparent bg-raised/80 px-2.5 font-mono text-[12.5px] text-ink outline-none"
             />
             <div className="grid grid-cols-2 gap-2">
               <Button variant="secondary" icon={FolderOpen} onClick={() => void pickFolder()}>
-                Ordner wählen
+              Choose folder
               </Button>
               <Button
                 variant="primary"
@@ -231,7 +231,7 @@ export default function ReaSection({ command }: { command?: SectionCommand | nul
                 loading={busy}
                 onClick={() => void usePath()}
               >
-                Weiter
+              Next
               </Button>
             </div>
           </section>
@@ -240,7 +240,7 @@ export default function ReaSection({ command }: { command?: SectionCommand | nul
         {savedDir && (
           <div className="mt-4">
             <Button variant="secondary" onClick={() => setPhase("work")}>
-              Zurück zur Arbeitsfläche
+              Back to the workspace
             </Button>
           </div>
         )}

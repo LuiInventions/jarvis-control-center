@@ -39,7 +39,7 @@ export async function buildContextFromDisk(
   try {
     entries = await fs.readdir(projectPath, { withFileTypes: true });
   } catch {
-    return { name, path: projectPath, source: "disk", note: "Verzeichnis nicht lesbar" };
+    return { name, path: projectPath, source: "disk", note: "Directory is not readable" };
   }
 
   const files = entries.filter((e) => e.isFile()).map((e) => e.name);
@@ -124,16 +124,16 @@ export async function improvePrompt(
   const context = JSON.stringify(await projectContext(projectPath));
 
   const instructions = [
-    "Du bist Experte darin, vage Entwickler-Prompts in präzise, umsetzbare",
-    `Anweisungen für ${activeCodeCliLabel()} (einen autonomen Coding-Agenten) zu verwandeln.`,
-    "Verbessere den Roh-Prompt: konkretisiere ihn, mache ihn projektbezogen,",
-    "eindeutig und direkt umsetzbar. Beziehe dich auf den realen Projekt-Stack",
-    "und die Struktur. Erfinde keine Fakten.",
-    "Gib AUSSCHLIESSLICH den verbesserten Prompt zurück — keine Einleitung,",
-    "keine Erklärung, keine Code-Fences, keine Anführungszeichen drumherum.",
-    "Behalte die Sprache des Nutzers bei (in der Regel Deutsch).",
+    "You are an expert at turning vague developer prompts into precise, actionable",
+    `instructions for ${activeCodeCliLabel()} (an autonomous coding agent).`,
+    "Improve the raw prompt: make it concrete, specific to this project,",
+    "unambiguous, and ready to run. Use the real project stack",
+    "and structure. Do not invent facts.",
+    "Return ONLY the improved prompt — no introduction,",
+    "no explanation, no code fences, and no surrounding quotes.",
+    "Keep the user's language (English by default).",
     "",
-    "=== PROJEKT-KONTEXT (JSON) ===",
+    "=== PROJECT CONTEXT (JSON) ===",
     context,
   ].join("\n");
 
@@ -141,7 +141,7 @@ export async function improvePrompt(
     model,
     messages: [
       { role: "system", content: instructions },
-      { role: "user", content: `Roh-Prompt des Nutzers:\n${rawPrompt}` },
+      { role: "user", content: `User's raw prompt:\n${rawPrompt}` },
     ],
   });
   return (res.choices[0]?.message?.content ?? "").trim();

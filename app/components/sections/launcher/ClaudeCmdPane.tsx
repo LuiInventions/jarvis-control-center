@@ -146,7 +146,7 @@ export default function ClaudeCmdPane({
       if (!term) return;
       if (msg.t === "out" && msg.d) term.write(msg.d);
       else if (msg.t === "exit") {
-        term.write(`\r\n\x1b[90m[Session beendet · Code ${msg.code}]\x1b[0m\r\n`);
+        term.write(`\r\n\x1b[90m[Session ended · code ${msg.code}]\x1b[0m\r\n`);
         onExitRef.current?.(msg.code ?? 0);
       }
     };

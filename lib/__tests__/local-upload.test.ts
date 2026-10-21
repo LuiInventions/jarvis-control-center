@@ -23,7 +23,7 @@ describe("dropped folder", () => {
   it("refuses a 0-byte folder the browser could not open", () => {
     const unread = droppedItemsOrError([], [{ name: "fotos", size: 0 }]);
     expect(unread.ok).toBe(false);
-    if (!unread.ok) expect(unread.error).toBe("Ordner konnte nicht gelesen werden.");
+    if (!unread.ok) expect(unread.error).toBe("Could not read the folder.");
     const file = droppedItemsOrError([], [{ name: "a.txt", size: 4 }]);
     expect(file.ok).toBe(true);
     const nested = droppedItemsOrError([], [{ name: "a.txt", size: 0, webkitRelativePath: "fotos/a.txt" }]);
@@ -60,8 +60,8 @@ describe("local image set", () => {
     expect(written.files).toBe(1);
     expect(await fs.readFile(path.join(dest, "image_setabcdefgh", "a.png"), "utf8")).toBe("bild");
 
-    await expect(removeLocalImageSet(dest, "not-a-set")).rejects.toThrow("Nur Bildordner.");
-    await expect(removeLocalImageSet(dest, "../image_setabcdefgh")).rejects.toThrow("Nur Bildordner.");
+    await expect(removeLocalImageSet(dest, "not-a-set")).rejects.toThrow("Image folders only.");
+    await expect(removeLocalImageSet(dest, "../image_setabcdefgh")).rejects.toThrow("Image folders only.");
     await removeLocalImageSet(dest, "image_setabcdefgh");
     await expect(fs.stat(path.join(dest, "image_setabcdefgh"))).rejects.toThrow();
   });

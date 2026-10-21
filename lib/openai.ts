@@ -19,7 +19,7 @@ export function getAiClient(): OpenAI {
   if (!aiApiKey) {
     const p = getProvider(aiProvider);
     throw new Error(
-      `Kein API-Key für ${p.label}. Trage ihn in den Einstellungen ein (oder wähle einen anderen Provider).`,
+      `No API key for ${p.label}. Enter it in Settings, or choose another provider.`,
     );
   }
   // Cap the request so a hung provider can't block the route (improve/review
@@ -45,19 +45,19 @@ export interface ProviderTestResult {
   error?: string;
 }
 
-/** Map an SDK/HTTP error to a short, actionable German message. */
+/** Map an SDK/HTTP error to a short, actionable English message. */
 export function friendlyAiError(err: unknown): string {
   const e = err as { status?: number; message?: string; code?: string };
   const status = e?.status;
   const msg = (e?.message || "").replace(/\s+/g, " ").trim().slice(0, 240);
-  if (status === 401) return "Ungültiger oder fehlender API-Key (401).";
+  if (status === 401) return "Invalid or missing API key (401).";
   if (status === 403)
-    return "Zugriff verweigert (403) — der Key darf dieses Modell nicht nutzen. Wähle ein anderes Modell oder gib den Zugriff beim Provider frei.";
+    return "Access denied (403). This key cannot use this model. Choose another model or enable access with the provider.";
   if (status === 404)
-    return "Nicht gefunden (404) — prüfe die Modell-ID für diesen Provider.";
-  if (status === 429) return "Rate-Limit erreicht (429) — später erneut versuchen.";
-  if (status && status >= 500) return `Provider-Fehler (${status}) — später erneut versuchen.`;
-  return msg || "Unbekannter Fehler.";
+    return "Not found (404). Check the model id for this provider.";
+  if (status === 429) return "Rate limit reached (429). Try again later.";
+  if (status && status >= 500) return `Provider error (${status}). Try again later.`;
+  return msg || "Unknown error.";
 }
 
 /** Same mapping, with the TLS or socket code when the SDK only says "Connection error." */
@@ -73,8 +73,8 @@ export function explainAiFailure(err: unknown): string {
   if (/^connection error\.?$/i.test(friendly) || /fetch failed/i.test(friendly)) {
     const code = codes.find((item) => item !== "UND_ERR_SOCKET");
     return code
-      ? `Verbindung zu OpenAI fehlgeschlagen (${code}).`
-      : "Verbindung zu OpenAI fehlgeschlagen.";
+      ? `Could not connect to OpenAI (${code}).`
+      : "Could not connect to OpenAI.";
   }
   return friendly;
 }
@@ -97,7 +97,7 @@ export async function testProvider(
   const provider = getProvider(providerId);
   const key = readSecrets().providerKeys?.[provider.id];
   if (!key)
-    return { provider: provider.id, label: provider.label, ok: false, error: "Kein API-Key gesetzt." };
+    return { provider: provider.id, label: provider.label, ok: false, error: "No API key is set." };
 
   // Short timeout + no retries: this is a connectivity probe, and the /test
   // route fans out over every keyed provider with a 60s maxDuration — one

@@ -59,15 +59,15 @@ export default function RemoteCodiumSection() {
         <Monitor className="size-4 shrink-0 text-faint" />
         <div className="mr-auto min-w-0">
           <h2 className="text-sm font-semibold text-ink">VS Codium</h2>
-          <p className="truncate text-[11px] text-faint">{status.dir || "Lokaler Projektordner"}</p>
+          <p className="truncate text-[11px] text-faint">{status.dir || "Local projects folder"}</p>
         </div>
         {status.url && (
           <Button size="sm" onClick={() => setReload((n) => n + 1)}>
-            Neu laden
+            Reload
           </Button>
         )}
         <Button size="sm" onClick={retry}>
-          Erneut versuchen
+          Try again
         </Button>
       </header>
       {status.url ? (
@@ -83,10 +83,10 @@ export default function RemoteCodiumSection() {
         <div className="grid flex-1 place-items-center px-6 text-center">
           <div className="max-w-md space-y-2">
             <p className="text-sm text-muted">
-              {status.error || (status.starting ? "VS Codium startet lokal…" : "VS Codium startet lokal…")}
+              {status.error || (status.starting ? "VS Codium is starting locally…" : "VS Codium is starting locally…")}
             </p>
             <p className="text-xs text-faint">
-              Der Editor öffnet denselben lokalen Ordner wie der Launcher unter Local.
+              The editor opens the same local folder as the launcher under Local.
             </p>
           </div>
         </div>

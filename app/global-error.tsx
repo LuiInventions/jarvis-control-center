@@ -22,7 +22,7 @@ export default function GlobalError({
         }}
       >
         <div style={{ textAlign: "center", maxWidth: 480, padding: 24 }}>
-          <h1 style={{ fontSize: 18, fontWeight: 600 }}>Etwas ist schiefgelaufen</h1>
+          <h1 style={{ fontSize: 18, fontWeight: 600 }}>Something went wrong</h1>
           <p style={{ fontSize: 14, opacity: 0.7 }}>{error.message}</p>
           <button
             onClick={() => reset()}
@@ -37,7 +37,7 @@ export default function GlobalError({
               fontSize: 14,
             }}
           >
-            Neu laden
+            Reload
           </button>
         </div>
       </body>

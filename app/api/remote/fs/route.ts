@@ -7,7 +7,7 @@ export const dynamic = "force-dynamic";
 export async function GET(req: Request) {
   const port = remoteBrokerPort();
   if (!port) {
-    return NextResponse.json({ error: "Nicht mit dem Server verbunden." }, { status: 409 });
+    return NextResponse.json({ error: "Not connected to the server." }, { status: 409 });
   }
   const url = new URL(req.url);
   const path = url.searchParams.get("path")?.trim() || "~";
@@ -16,7 +16,7 @@ export async function GET(req: Request) {
     const listing = q ? await remoteFind(port, path, q) : await remoteList(port, path);
     return NextResponse.json(listing);
   } catch (err) {
-    const message = err instanceof Error ? err.message : "Dateiliste fehlgeschlagen.";
+    const message = err instanceof Error ? err.message : "Could not list files.";
     return NextResponse.json({ error: message, path, entries: [] }, { status: 502 });
   }
 }

@@ -25,7 +25,7 @@ export function humanizeForSpeech(text: string): string {
 
 function authHeaders(): Record<string, string> {
   const cfg = getConfig();
-  if (!cfg.cartesiaApiKey) throw new Error("CARTESIA_API_KEY ist nicht gesetzt.");
+  if (!cfg.cartesiaApiKey) throw new Error("CARTESIA_API_KEY is not set.");
   return {
     "X-API-Key": cfg.cartesiaApiKey,
     "Cartesia-Version": cfg.cartesiaVersion,

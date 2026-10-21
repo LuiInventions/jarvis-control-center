@@ -46,7 +46,7 @@ async function readJson(req: IncomingMessage): Promise<unknown> {
   for await (const chunk of req) {
     const buf = Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk);
     n += buf.length;
-    if (n > 1_000_000) throw new Error("Anfrage zu gross.");
+    if (n > 1_000_000) throw new Error("Request is too large.");
     chunks.push(buf);
   }
   return JSON.parse(Buffer.concat(chunks).toString("utf8"));
@@ -60,7 +60,7 @@ async function writeLine(res: ServerResponse, body: unknown): Promise<void> {
 function portOf(getPort: () => number | null): number {
   const port = getPort();
   if (!port) {
-    const err = new Error("Nicht mit dem Server verbunden.");
+    const err = new Error("Not connected to the server.");
     (err as Error & { status?: number }).status = 409;
     throw err;
   }
@@ -69,7 +69,7 @@ function portOf(getPort: () => number | null): number {
 
 async function handleUpload(req: IncomingMessage, res: ServerResponse, getPort: () => number | null): Promise<void> {
   if (req.method !== "POST") {
-    json(res, 405, { error: "Methode nicht erlaubt." });
+    json(res, 405, { error: "Method not allowed." });
     return;
   }
   let root = "";
@@ -78,17 +78,17 @@ async function handleUpload(req: IncomingMessage, res: ServerResponse, getPort: 
     root = decodePathHeader(header(req, "x-ccc-dir")).trim();
     rel = decodePathHeader(header(req, "x-ccc-rel"));
   } catch {
-    json(res, 400, { error: "Pfad ungültig." });
+    json(res, 400, { error: "Invalid path." });
     return;
   }
   if (!root) {
-    json(res, 400, { error: "Ordner fehlt." });
+    json(res, 400, { error: "Folder is missing." });
     return;
   }
   const safe = remoteRelative(rel);
   const kind = header(req, "x-ccc-kind");
   if (safe === null || !safe) {
-    json(res, 400, { error: "Dateiname ungültig." });
+    json(res, 400, { error: "Invalid file name." });
     return;
   }
   const port = portOf(getPort);
@@ -100,12 +100,12 @@ async function handleUpload(req: IncomingMessage, res: ServerResponse, getPort: 
   }
   const len = Number(header(req, "content-length"));
   if (!Number.isInteger(len) || len < 0) {
-    json(res, 411, { error: "Länge fehlt." });
+    json(res, 411, { error: "Length is missing." });
     req.destroy();
     return;
   }
   if (len > MAX_TRANSFER_BYTES) {
-    json(res, 413, { error: "Maximal 10 GB." });
+    json(res, 413, { error: "Maximum 10 GB." });
     req.destroy();
     return;
   }
@@ -128,7 +128,7 @@ async function handleDownloadPost(req: IncomingMessage, res: ServerResponse, get
   const remotePath = typeof body.path === "string" ? body.path.trim() : "";
   const dest = typeof body.dest === "string" ? body.dest.trim() : "";
   if (!remotePath || !dest) {
-    json(res, 400, { error: "Pfad fehlt." });
+    json(res, 400, { error: "Path is missing." });
     return;
   }
   const localDir = path.resolve(dest);
@@ -136,11 +136,11 @@ async function handleDownloadPost(req: IncomingMessage, res: ServerResponse, get
   try {
     st = await fs.promises.stat(localDir);
   } catch {
-    json(res, 400, { error: "Zielordner fehlt." });
+    json(res, 400, { error: "Target folder is missing." });
     return;
   }
   if (!st.isDirectory()) {
-    json(res, 400, { error: "Ziel ist kein Ordner." });
+    json(res, 400, { error: "Target is not a folder." });
     return;
   }
   const port = portOf(getPort);
@@ -166,8 +166,8 @@ async function handleDownloadPost(req: IncomingMessage, res: ServerResponse, get
     res.end();
   } catch (err) {
     if (!res.writableEnded) {
-      const message = err instanceof Error ? err.message : "Herunterladen fehlgeschlagen.";
-      if (message === "Abgebrochen.") {
+      const message = err instanceof Error ? err.message : "Download failed.";
+      if (message === "Canceled.") {
         res.end();
         return;
       }
@@ -188,7 +188,7 @@ async function handleDownloadGet(req: IncomingMessage, res: ServerResponse, getP
   const remotePath = url.searchParams.get("path")?.trim() || "";
   const directory = url.searchParams.get("dir") === "1";
   if (!remotePath) {
-    json(res, 400, { error: "Pfad fehlt." });
+    json(res, 400, { error: "Path is missing." });
     return;
   }
   const port = portOf(getPort);
@@ -224,7 +224,7 @@ async function handleDownloadGet(req: IncomingMessage, res: ServerResponse, getP
   }
   for (const file of walked.files) {
     const remoteFile = joinRemote(remotePath, file.rel);
-    if (!remoteFile) throw new Error("Pfad ungültig.");
+    if (!remoteFile) throw new Error("Invalid path.");
     await writeRes(res, tarMemberPrefix(file.rel, file.size));
     await remoteRead(port, remoteFile, (chunk) => writeRes(res, chunk), ctrl.signal);
     const pad = tarPadding(file.size);
@@ -250,10 +250,10 @@ export async function handleRemoteTransfer(
     if (pathOnly === UPLOAD) await handleUpload(req, res, getPort);
     else if (req.method === "POST") await handleDownloadPost(req, res, getPort);
     else if (req.method === "GET") await handleDownloadGet(req, res, getPort);
-    else json(res, 405, { error: "Methode nicht erlaubt." });
+    else json(res, 405, { error: "Method not allowed." });
   } catch (err) {
     const status = (err as { status?: number }).status || 502;
-    const message = err instanceof Error ? err.message : "Übertragung fehlgeschlagen.";
+    const message = err instanceof Error ? err.message : "Transfer failed.";
     if (!res.headersSent) json(res, status, { error: message });
     else if (!res.writableEnded) {
       res.end();

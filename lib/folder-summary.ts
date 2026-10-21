@@ -90,12 +90,12 @@ export async function summarizeFolder(folder: string): Promise<string> {
   const mani = await manifest(abs);
 
   const instructions =
-    "Fasse den folgenden Ordner/Projekt in 3–5 prägnanten Sätzen auf Deutsch zusammen: " +
-    "Was ist es, welcher Stack/Zweck, wichtigste Inhalte. Keine Floskeln, keine Überschrift.";
-  const input = `Ordner: ${path.basename(abs)}\nPfad: ${abs}\n\nStruktur:\n${tree}\n\n${mani}`;
+    "Summarize the following folder/project in 3–5 concise English sentences: " +
+    "what it is, its stack/purpose, and the most important contents. No filler, no heading.";
+  const input = `Folder: ${path.basename(abs)}\nPath: ${abs}\n\nStructure:\n${tree}\n\n${mani}`;
 
   const res = await client.responses.create({ model, instructions, input });
-  const summary = (res.output_text ?? "").trim() || "Keine Zusammenfassung verfügbar.";
+  const summary = (res.output_text ?? "").trim() || "No summary available.";
 
   cache[abs] = { mtimeMs, summary };
   writeJson(CACHE_FILE, cache);

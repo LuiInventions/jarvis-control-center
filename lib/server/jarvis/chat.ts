@@ -70,7 +70,7 @@ export function hasJarvisKey(): boolean {
 export function saveJarvisKey(apiKey: string): boolean {
   const key = apiKey.trim();
   if (key && (key.length < 20 || /\s/.test(key))) {
-    throw new JarvisRequestError("Das ist kein OpenAI-API-Key.");
+    throw new JarvisRequestError("That is not an OpenAI API key.");
   }
   writeSecrets({ providerKeys: { openai: key } });
   return hasJarvisKey();
@@ -94,11 +94,11 @@ export async function askJarvis(
   onEvent?: (event: LoopEvent) => void,
 ): Promise<JarvisHistory> {
   const text = userText.trim();
-  if (!text) throw new JarvisRequestError("Schreib eine Nachricht.");
-  if (text.length > MAX_TEXT) throw new JarvisRequestError("Die Nachricht ist zu lang.");
+  if (!text) throw new JarvisRequestError("Write a message.");
+  if (text.length > MAX_TEXT) throw new JarvisRequestError("The message is too long.");
   if (!hasJarvisKey()) throw new JarvisRequestError(JARVIS_KEY_MISSING);
   const url = mcpEndpoint();
-  if (busy) throw new JarvisRequestError("Jarvis antwortet noch.", 409);
+  if (busy) throw new JarvisRequestError("Jarvis is still replying.", 409);
   busy = true;
   let history: JarvisHistory = { messages: [] };
   try {
@@ -110,7 +110,7 @@ export async function askJarvis(
     const answer = await withMcp(url, async (client) => {
       const tools = (await listAllTools(client)).map(toSpec);
       if (tools.length === 0) {
-        throw new JarvisRequestError("Der MCP-Server hat keine Werkzeuge gemeldet.");
+        throw new JarvisRequestError("The MCP server did not report any tools.");
       }
       const prompt = jarvisSystemPrompt(MCP_INSTRUCTIONS, tools);
       const openai = lunaClient();
@@ -147,7 +147,7 @@ export async function askJarvis(
     if (reasoning) activity.push({ kind: "reasoning", text: reasoning });
     for (const tool of answer.tools) activity.push({ kind: "tool", name: tool.name, ok: tool.ok });
     history.messages.push(
-      message("assistant", answer.text || "Ich habe keine Antwort erhalten.", answer.tools, activity, trace),
+      message("assistant", answer.text || "I did not get a reply.", answer.tools, activity, trace),
     );
     saveHistory(history);
     return loadJarvisHistory();
@@ -189,7 +189,7 @@ function mcpEndpoint(): string {
   if (live) return live;
   const stored = readJson<{ url?: string | null }>("mcp.json", {}).url;
   if (stored) return stored;
-  throw new JarvisRequestError("Der MCP-Server läuft nicht. Starte Jarvis Control Center neu.");
+  throw new JarvisRequestError("The MCP server is not running. Restart Jarvis Control Center.");
 }
 
 function lunaClient(): OpenAI {
@@ -222,9 +222,9 @@ async function withMcp<T>(url: string, fn: (client: Client) => Promise<T>): Prom
 function mcpFailure(err: unknown): string {
   const message = err instanceof Error ? err.message : String(err);
   if (/ECONNREFUSED|ENOTFOUND|fetch failed|socket|ECONNRESET/i.test(message)) {
-    return "Der MCP-Server ist nicht erreichbar. Starte Jarvis Control Center neu.";
+    return "The MCP server is not reachable. Restart Jarvis Control Center.";
   }
-  return message || "Der MCP-Server hat nicht geantwortet.";
+  return message || "The MCP server did not reply.";
 }
 
 function toSpec(tool: { name: string; description?: string; inputSchema?: object }): JarvisToolSpec {
@@ -303,9 +303,9 @@ async function callLunaOnce(
       if (!text) text = event.response.output_text ?? "";
       return { text, calls, carried };
     } else if (event.type === "error") {
-      throw new JarvisRequestError(event.message || "Das Modell hat die Antwort abgebrochen.");
+      throw new JarvisRequestError(event.message || "The model stopped the reply.");
     } else if (event.type === "response.failed") {
-      throw new JarvisRequestError(event.response.error?.message || "Das Modell hat die Antwort abgebrochen.");
+      throw new JarvisRequestError(event.response.error?.message || "The model stopped the reply.");
     }
   }
   return { text, calls: [] };
@@ -348,7 +348,7 @@ async function callMcpTool(
       })
       .filter(Boolean)
       .join("\n");
-    return { text: clipText(text || "(leeres Werkzeug-Ergebnis)", TOOL_TEXT_CAP).text, ok: result.isError !== true };
+    return { text: clipText(text || "(empty tool result)", TOOL_TEXT_CAP).text, ok: result.isError !== true };
   } catch (err) {
     return { text: mcpFailure(err), ok: false };
   }
@@ -356,8 +356,8 @@ async function callMcpTool(
 
 function forModel(entry: JarvisMessage): { role: "user" | "assistant"; text: string } {
   if (entry.role === "assistant" && entry.tools?.length) {
-    const names = entry.tools.map((tool) => `${tool.name} ${tool.ok ? "erfolgreich" : "fehlgeschlagen"}`).join(", ");
-    return { role: "assistant", text: `${entry.text}\n\nWerkzeuge: ${names}` };
+    const names = entry.tools.map((tool) => `${tool.name} ${tool.ok ? "succeeded" : "failed"}`).join(", ");
+    return { role: "assistant", text: `${entry.text}\n\nTools: ${names}` };
   }
   return { role: entry.role, text: entry.text };
 }

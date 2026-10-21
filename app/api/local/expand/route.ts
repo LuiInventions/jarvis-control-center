@@ -11,7 +11,7 @@ export async function POST(req: NextRequest) {
     return Response.json({ error: "invalid json" }, { status: 400 });
   }
   const paths = Array.isArray(body.paths) ? body.paths.filter((item): item is string => typeof item === "string") : [];
-  if (paths.length === 0) return Response.json({ error: "Nichts zum Hochladen." }, { status: 400 });
+  if (paths.length === 0) return Response.json({ error: "Nothing to upload." }, { status: 400 });
   try {
     const items = await expandDroppedPaths(paths);
     return Response.json({ items });

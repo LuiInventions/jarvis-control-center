@@ -390,7 +390,7 @@ async function pingBroker(port: number): Promise<void> {
       await new Promise((r) => setTimeout(r, 250));
     }
   }
-  throw new Error("Die Weiterleitung für Sitzungen konnte nicht geöffnet werden.");
+  throw new Error("Could not open the session forward.");
 }
 
 async function stopRemoteClis(): Promise<void> {
@@ -420,7 +420,7 @@ export async function disconnectRemote(): Promise<void> {
   state.pending = null;
   state.live = null;
   state.loginPty = null;
-  pushView("\r\nVerbindung getrennt.\r\n");
+  pushView("\r\nConnection disconnected.\r\n");
   await stopRemoteClis();
   if (pending && pending !== live) await cleanup(pending);
   await cleanup(live);
@@ -431,11 +431,11 @@ export function submitRemoteOtp(code: string): RemotePublicStatus {
   const state = hub();
   const trimmed = code.trim();
   if (!state.needsOtp || !state.otpWait) {
-    state.error = "Es wird gerade kein 2FA-Code verlangt.";
+    state.error = "No 2FA code is being requested.";
     return remoteStatus();
   }
   if (!trimmed) {
-    state.error = "2FA-Code fehlt.";
+    state.error = "2FA code is missing.";
     return remoteStatus();
   }
   state.error = "";
@@ -457,13 +457,13 @@ export function submitRemotePassword(input: {
 }): RemotePublicStatus {
   const state = hub();
   if (!state.needsPassword || !state.passwordWait) {
-    state.error = "Es wird gerade kein Passwort verlangt.";
+    state.error = "No password is being requested.";
     return remoteStatus();
   }
   let password = input.password;
   if (!password && input.useSaved) password = savedPassword(state.pendingId);
   if (!password) {
-    state.error = "Passwort fehlt.";
+    state.error = "Password is missing.";
     return remoteStatus();
   }
   state.pendingSave = {
@@ -522,7 +522,7 @@ export async function beginRemote(input: {
   }
   const tools = resolveSshTools();
   if (!tools) {
-    state.error = "OpenSSH fehlt. ssh.exe wurde nicht gefunden.";
+    state.error = "OpenSSH is missing. ssh.exe was not found.";
     return remoteStatus();
   }
 
@@ -553,7 +553,7 @@ export async function beginRemote(input: {
     fs.rmSync(dir, { recursive: true, force: true });
     if (my !== hub().gen) return remoteStatus();
     state.connecting = false;
-    state.error = "Ein lokaler Port für die Sitzungen konnte nicht geöffnet werden.";
+    state.error = "Could not open a local port for sessions.";
     return remoteStatus();
   }
   if (!localPort || my !== hub().gen) {
@@ -596,8 +596,8 @@ export async function beginRemote(input: {
     if (my !== hub().gen) return remoteStatus();
     state.connecting = false;
     state.error = /file not found/i.test(message)
-      ? `OpenSSH fehlt oder ssh ist nicht startbar (${tools.ssh}).`
-      : `ssh konnte nicht gestartet werden: ${message}`;
+      ? `OpenSSH is missing or ssh cannot be started (${tools.ssh}).`
+      : `ssh could not be started: ${message}`;
     return remoteStatus();
   }
 
@@ -654,8 +654,8 @@ function runAuth(my: number, live: Live): void {
         reject(
           new Error(
             kind === "password"
-              ? "Zeitüberschreitung bei der Passwort-Eingabe."
-              : "Zeitüberschreitung bei der 2FA-Eingabe.",
+              ? "Password entry timed out."
+              : "2FA entry timed out.",
           ),
         );
       }, 180000);
@@ -665,7 +665,7 @@ function runAuth(my: number, live: Live): void {
         else current.needsOtp = false;
         if (kind === "password") current.passwordWait = null;
         else current.otpWait = null;
-        if (!code || my !== hub().gen) reject(new Error("Anmeldung abgebrochen."));
+        if (!code || my !== hub().gen) reject(new Error("Sign-in canceled."));
         else resolve(code);
       };
       if (kind === "password") current.passwordWait = accept;
@@ -673,8 +673,8 @@ function runAuth(my: number, live: Live): void {
     });
 
   const done = new Promise<void>((resolve, reject) => {
-    let timer = setTimeout(() => reject(new Error("Zeitüberschreitung bei der Anmeldung.")), 45000);
-    const arm = (ms: number, message = "Zeitüberschreitung bei der Anmeldung.") => {
+    let timer = setTimeout(() => reject(new Error("Sign-in timed out.")), 45000);
+    const arm = (ms: number, message = "Sign-in timed out.") => {
       clearTimeout(timer);
       timer = setTimeout(() => reject(new Error(message)), ms);
     };
@@ -696,7 +696,7 @@ function runAuth(my: number, live: Live): void {
       if (my !== hub().gen || stage !== "probe" || !live.login) return;
       probes += 1;
       if (probes > 6) {
-        finish(new Error("Keine Shell nach der Anmeldung. 2FA oder Passwort prüfen."));
+        finish(new Error("No shell after sign-in. Check 2FA or the password."));
         return;
       }
       live.login.write("printf 'CCC_READY_%s\\n' ok\n");
@@ -708,7 +708,7 @@ function runAuth(my: number, live: Live): void {
       pushView(chunk);
       if (stage === "probe" && transcript.includes("CCC_READY_ok")) {
         stage = "quiet";
-        arm(20000, "Die Weiterleitung für Sitzungen konnte nicht geöffnet werden.");
+        arm(20000, "Could not open the session forward.");
         // Turn echo off before the long broker line, then start it.
         live.login?.write("stty -echo\n");
         brokerTimer = setTimeout(startBroker, 500);
@@ -716,15 +716,15 @@ function runAuth(my: number, live: Live): void {
       }
       if (stage === "quiet") return;
       if (stage === "broker" && transcript.includes("CCC_BROKER_MISSING")) {
-        finish(new Error("Auf dem Server fehlt python3. Damit können Sitzungen ohne erneute Anmeldung nicht gestartet werden."));
+        finish(new Error("python3 is missing on the server. Sessions cannot start without signing in again."));
         return;
       }
       if (stage === "broker" && transcript.includes("CCC_BROKER_BIND")) {
-        finish(new Error("Der Port für Sitzungen ist auf dem Server belegt."));
+        finish(new Error("The session port is already in use on the server."));
         return;
       }
       if (stage === "broker" && /administratively prohibited|Could not request local forwarding/i.test(chunk)) {
-        finish(new Error("Die Weiterleitung für Sitzungen konnte nicht geöffnet werden."));
+        finish(new Error("Could not open the session forward."));
         return;
       }
       if (stage === "broker") {
@@ -745,12 +745,12 @@ function runAuth(my: number, live: Live): void {
         return;
       }
       if (kind === "denied") {
-        finish(new Error("Anmeldung abgelehnt."));
+        finish(new Error("Sign-in rejected."));
         return;
       }
       if (kind === "password" && stage === "auth") {
         if (passwordSent) {
-          if (Date.now() >= passwordQuietUntil) finish(new Error("Passwort abgelehnt."));
+          if (Date.now() >= passwordQuietUntil) finish(new Error("Password rejected."));
           return;
         }
         askForPassword();
@@ -818,8 +818,8 @@ function runAuth(my: number, live: Live): void {
     }
 
     live.login!.onExit(() => {
-      if (!settled) finish(new Error("ssh wurde vor der Anmeldung beendet."));
-      else pushView("\r\nssh beendet.\r\n");
+      if (!settled) finish(new Error("ssh exited before sign-in."));
+      else pushView("\r\nssh ended.\r\n");
     });
   });
 

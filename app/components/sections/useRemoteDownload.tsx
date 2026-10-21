@@ -32,7 +32,7 @@ export function useRemoteDownload() {
       link.remove();
       return;
     }
-    const folder = await desktop.pickFolder("Zielordner auf diesem PC");
+    const folder = await desktop.pickFolder("Destination folder on this PC");
     if (!folder) return;
     const ctrl = new AbortController();
     abortRef.current = ctrl;
@@ -56,9 +56,9 @@ export function useRemoteDownload() {
       });
       if (!res.ok) {
         const data = (await res.json().catch(() => ({}))) as { error?: string };
-        throw new Error(data.error || "Herunterladen fehlgeschlagen.");
+        throw new Error(data.error || "Download failed.");
       }
-      if (!res.body) throw new Error("Herunterladen fehlgeschlagen.");
+      if (!res.body) throw new Error("Download failed.");
       const reader = res.body.getReader();
       const decoder = new TextDecoder();
       let buf = "";
@@ -75,7 +75,7 @@ export function useRemoteDownload() {
           bytes?: number;
           folder?: string;
         };
-        if (event.type === "error") throw new Error(event.error || "Herunterladen fehlgeschlagen.");
+        if (event.type === "error") throw new Error(event.error || "Download failed.");
         if (event.type === "progress") {
           setState((prev) =>
             prev
@@ -120,7 +120,7 @@ export function useRemoteDownload() {
         return;
       }
       setState((prev) =>
-        prev ? { ...prev, phase: "error", error: (err as Error).message || "Herunterladen fehlgeschlagen." } : prev,
+        prev ? { ...prev, phase: "error", error: (err as Error).message || "Download failed." } : prev,
       );
     }
   };
@@ -132,7 +132,7 @@ export function useRemoteDownload() {
 
   const dialog = state ? (
     <CenterDialog
-      title={state.phase === "done" ? "Gespeichert" : state.phase === "error" ? "Herunterladen" : "Wird heruntergeladen"}
+      title={state.phase === "done" ? "Saved" : state.phase === "error" ? "Download" : "Downloading"}
       subtitle={state.folder}
       busy={state.phase === "work"}
       onClose={close}
@@ -140,19 +140,19 @@ export function useRemoteDownload() {
       {state.phase === "work" && (
         <div>
           <TransferProgress
-            label="Wird heruntergeladen"
+            label="Downloading"
             written={state.written}
             total={state.total}
             detail={state.files > 0 ? `${state.filesDone} / ${state.files} · ${state.name}` : state.name}
           />
           <button type="button" onClick={close} className="mx-auto block cursor-pointer text-sm text-muted hover:text-ink">
-            Abbrechen
+            Cancel
           </button>
         </div>
       )}
       {state.phase === "done" && (
         <TransferSuccess
-          title="Gespeichert"
+          title="Saved"
           summary={state.summary}
           onClose={close}
           onOpen={

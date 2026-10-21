@@ -32,7 +32,7 @@ describe("jarvis prompt", () => {
     expect(prompt).toContain("How to use: Call get_session_x_info with where (github|local|remote, required)");
     expect(prompt).toContain("x (number, required)");
     expect(prompt).toContain("How to use: Call list_active_github_sessions with no arguments.");
-    expect(prompt).toContain("Reply in German.");
+    expect(prompt).toContain("Reply in English.");
   });
 });
 
@@ -48,7 +48,7 @@ describe("jarvis model", () => {
         code: "SELF_SIGNED_CERT_IN_CHAIN",
       }),
     });
-    expect(explainAiFailure(err)).toBe("Verbindung zu OpenAI fehlgeschlagen (SELF_SIGNED_CERT_IN_CHAIN).");
+    expect(explainAiFailure(err)).toBe("Could not connect to OpenAI (SELF_SIGNED_CERT_IN_CHAIN).");
   });
 
   it("trusts the OS certificate store without throwing", () => {
@@ -94,7 +94,7 @@ describe("jarvis tool loop", () => {
       callTool: async () => ({ text: "ok", ok: true }),
     });
     expect(result.tools).toHaveLength(2);
-    expect(result.text).toMatch(/Werkzeug-Limit/);
+    expect(result.text).toMatch(/tool limit/);
   });
 
   it("reports each call and sends a thrown tool error back to the model", async () => {

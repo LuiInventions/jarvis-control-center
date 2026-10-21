@@ -16,7 +16,7 @@ export async function POST(req: NextRequest) {
   const prompt = (body.prompt ?? "").trim();
   if (!projectPath || !prompt) {
     return Response.json(
-      { error: "projectPath und prompt sind erforderlich" },
+      { error: "projectPath and prompt are required" },
       { status: 400 },
     );
   }

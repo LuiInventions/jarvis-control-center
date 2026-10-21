@@ -23,7 +23,7 @@ function selectedLocalPath(): string {
   return selected || getConfig().projectsDir;
 }
 
-/** The Local Ordner. Falls back to the projects folder until one is selected. */
+/** The Local folder. Falls back to the projects folder until one is selected. */
 export function localGetPath() {
   const projectsDir = getConfig().projectsDir;
   const selected = readSettings().launcherLocalPath?.trim() || "";
@@ -32,12 +32,12 @@ export function localGetPath() {
     projectsDir,
     selected: Boolean(selected),
     note: selected
-      ? "This is the Local Ordner. local_session_start, local_search, and the local file tools use it."
-      : "No Local folder is selected yet. path is the projects folder. Call local_select_path to choose the Ordner.",
+      ? "This is the Local folder. local_session_start, local_search, and the local file tools use it."
+      : "No Local folder is selected yet. path is the projects folder. Call local_select_path to choose the folder.",
   };
 }
 
-/** Remember a folder as the Local Ordner and show it in the Local tab. Does not start a CLI. */
+/** Remember a folder as the Local folder and show it in the Local tab. Does not start a CLI. */
 export async function localSelectPath(dir: string) {
   const root = await existingDir(dir);
   settingsUpdate({ launcherLocalPath: root });
@@ -53,13 +53,13 @@ export async function localSelectPath(dir: string) {
   };
 }
 
-/** Change the projects folder in Settings. This is not the Local Ordner. */
+/** Change the projects folder in Settings. This is not the Local folder. */
 export async function localSetProjectsDir(dir: string) {
   const root = await existingDir(dir);
   settingsUpdate({ projectsDir: root });
   return {
     projectsDir: root,
-    note: "The Settings projects folder is updated. The Local Ordner stays until local_select_path.",
+    note: "The Settings projects folder is updated. The Local folder stays until local_select_path.",
   };
 }
 

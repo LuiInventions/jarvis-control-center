@@ -40,11 +40,11 @@ export function confirmUploadQuestion(entries: readonly TransferEntry[], dest: s
   const size = formatBytes(planned.plan.total);
   const list = [...roots.entries()];
   if (list.length === 1) {
-    return `Möchten Sie ${list[0][0]} (${size}) nach ${dest} hochladen?`;
+    return `Upload ${list[0][0]} (${size}) to ${dest}?`;
   }
   const allDirs = list.length > 0 && list.every(([, info]) => info.dir);
-  const label = allDirs ? `${list.length} Ordner` : list.every(([, info]) => !info.dir) ? `${list.length} Dateien` : `${list.length} Elemente`;
-  return `Möchten Sie ${label} (${size}) nach ${dest} hochladen?`;
+  const label = allDirs ? `${list.length} folders` : list.every(([, info]) => !info.dir) ? `${list.length} files` : `${list.length} items`;
+  return `Upload ${label} (${size}) to ${dest}?`;
 }
 
 export function isImageFile(file: { name: string; type?: string }): boolean {
@@ -67,15 +67,15 @@ export function takeImages(existing: readonly { size: number }[], incoming: read
   for (let i = 0; i < incoming.length; i++) {
     const file = incoming[i];
     if (!isImageFile(file)) {
-      if (!error) error = "Nur Bilder.";
+      if (!error) error = "Images only.";
       continue;
     }
     if (count >= MAX_IMAGE_COUNT) {
-      if (!error) error = "Maximal 10 Bilder.";
+      if (!error) error = "At most 10 images.";
       continue;
     }
     if (!Number.isFinite(file.size) || file.size < 0 || file.size > MAX_IMAGE_BYTES || bytes + file.size > MAX_IMAGE_BYTES) {
-      if (!error) error = "Maximal 2 GB.";
+      if (!error) error = "At most 2 GB.";
       continue;
     }
     take.push(i);
@@ -143,7 +143,7 @@ function randomLetterBytes(): Uint8Array {
 
 /** The same sentence every time, with the folder filled in, so it can be pasted to the CLI. */
 export function imageSetPrompt(folderPath: string): string {
-  return `in ${folderPath} sind die bilder:`;
+  return `the images are in ${folderPath}:`;
 }
 
 /**
@@ -155,9 +155,9 @@ export function droppedItemsOrError<T extends NamedFile>(
   fallback: readonly T[],
 ): { ok: true; files: T[] } | { ok: false; error: string } {
   if (walked.length > 0) return { ok: true, files: [...walked] };
-  if (fallback.length === 0) return { ok: false, error: "Nichts zum Hochladen." };
+  if (fallback.length === 0) return { ok: false, error: "Nothing to upload." };
   const readable = fallback.some((file) => file.size > 0 || Boolean(file.relativePath || file.webkitRelativePath));
-  if (!readable) return { ok: false, error: "Ordner konnte nicht gelesen werden." };
+  if (!readable) return { ok: false, error: "Could not read the folder." };
   return { ok: true, files: [...fallback] };
 }
 
@@ -170,8 +170,8 @@ function nameTaken(used: Set<string>, name: string): boolean {
 }
 
 export function uniqueImageName(name: string, used: Set<string>): string {
-  const base = name.replace(/\\/g, "/").split("/").pop()?.replace(/^\.+/, "") || "bild";
-  const clean = base.replace(/[<>:"|?*\u0000-\u001f]/g, "_") || "bild";
+  const base = name.replace(/\\/g, "/").split("/").pop()?.replace(/^\.+/, "") || "image";
+  const clean = base.replace(/[<>:"|?*\u0000-\u001f]/g, "_") || "image";
   if (!nameTaken(used, clean)) {
     used.add(clean);
     return clean;
@@ -204,12 +204,12 @@ const TYPE_EXT: Record<string, string> = {
 
 /** A file name the image-set cache will accept, and that is not already in `used`. */
 export function imageUploadName(name: string, type: string | undefined, used: Set<string>): string {
-  let base = name.replace(/\\/g, "/").split("/").pop()?.replace(/^\.+/, "") || "bild";
-  base = base.replace(/[<>:"|?*\u0000-\u001f]/g, "_") || "bild";
+  let base = name.replace(/\\/g, "/").split("/").pop()?.replace(/^\.+/, "") || "image";
+  base = base.replace(/[<>:"|?*\u0000-\u001f]/g, "_") || "image";
   if (imageMime(base) === null) {
     const mime = (type || "").split(";")[0].trim().toLowerCase();
     const ext = TYPE_EXT[mime] || (mime.startsWith("image/") ? "png" : "");
-    if (ext) base = `${base.replace(/\.+$/, "") || "bild"}.${ext}`;
+    if (ext) base = `${base.replace(/\.+$/, "") || "image"}.${ext}`;
   }
   return uniqueImageName(base, used);
 }

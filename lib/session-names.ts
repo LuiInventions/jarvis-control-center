@@ -28,7 +28,7 @@ export function placeLabel(place: SessionPlace): string {
   if (place === "github") return "GitHub";
   if (place === "server") return "Server";
   if (place === "rea") return "REA";
-  return "Lokal";
+  return "Local";
 }
 
 /**

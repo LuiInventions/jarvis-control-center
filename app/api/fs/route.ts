@@ -13,7 +13,7 @@ export async function GET(req: NextRequest) {
   } catch (err) {
     const code = (err as NodeJS.ErrnoException).code;
     const message =
-      code === "ENOENT" ? "Dieser Ordner ist nicht mehr da." : (err as Error).message;
+      code === "ENOENT" ? "This folder is no longer there." : (err as Error).message;
     return Response.json({ error: message }, { status: 400 });
   }
 }

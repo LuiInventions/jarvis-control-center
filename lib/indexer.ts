@@ -122,7 +122,7 @@ export async function getIndexForChat(
  * answering sooner. Details (trees, READMEs) are fetched on demand via tools.
  */
 export function compactProjects(index: ProjectIndex): string {
-  if (!index.projects.length) return "(keine Projekte indexiert)";
+  if (!index.projects.length) return "(no projects indexed)";
   return index.projects
     .map((p) => {
       const tags =

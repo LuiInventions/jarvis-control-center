@@ -84,7 +84,7 @@ class ByteQueue {
   async read(n: number): Promise<Buffer> {
     while (this.length < n) {
       if (this.error) throw this.error;
-      if (this.ended) throw new Error("Übertragung unvollständig.");
+      if (this.ended) throw new Error("Transfer incomplete.");
       await this.wait();
     }
     return this.take(n);
@@ -102,7 +102,7 @@ class ByteQueue {
         offset += this.parts[i].length;
       }
       if (this.error) throw this.error;
-      if (this.ended) throw new Error("Übertragung unvollständig.");
+      if (this.ended) throw new Error("Transfer incomplete.");
       await this.wait();
     }
   }
@@ -150,7 +150,7 @@ function b64(value: string): string {
 
 function throwIfAborted(signal?: AbortSignal): void {
   if (signal?.aborted) {
-    const err = new Error("Abgebrochen.");
+    const err = new Error("Canceled.");
     err.name = "AbortError";
     throw err;
   }
@@ -160,7 +160,7 @@ async function withSocket<T>(port: number, signal: AbortSignal | undefined, fn: 
   throwIfAborted(signal);
   const socket = await connect(port);
   const queue = new ByteQueue(socket);
-  const onAbort = () => socket.destroy(new Error("Abgebrochen."));
+  const onAbort = () => socket.destroy(new Error("Canceled."));
   signal?.addEventListener("abort", onAbort);
   try {
     return await fn(socket, queue);
@@ -186,44 +186,44 @@ export async function remotePut(
   signal?: AbortSignal,
 ): Promise<void> {
   const safe = remoteRelative(rel);
-  if (!safe) throw new Error("Dateiname ungültig.");
-  if (!Number.isFinite(size) || size < 0 || size > MAX_TRANSFER_BYTES) throw new Error("Maximal 10 GB.");
+  if (!safe) throw new Error("Invalid file name.");
+  if (!Number.isFinite(size) || size < 0 || size > MAX_TRANSFER_BYTES) throw new Error("Maximum 10 GB.");
   await withSocket(port, signal, async (socket, queue) => {
     await writeAll(socket, Buffer.from(`PUT ${b64(root)} ${b64(safe)} ${size}\n`));
     let sent = 0;
     for await (const chunk of bytes) {
       throwIfAborted(signal);
       const buf = Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk);
-      if (sent + buf.length > size) throw new Error("Übertragung unvollständig.");
+      if (sent + buf.length > size) throw new Error("Transfer incomplete.");
       if (buf.length === 0) continue;
       await writeAll(socket, buf);
       sent += buf.length;
     }
-    if (sent !== size) throw new Error("Übertragung unvollständig.");
-    parseOk(await queue.readLine(), "Hochladen fehlgeschlagen.");
+    if (sent !== size) throw new Error("Transfer incomplete.");
+    parseOk(await queue.readLine(), "Upload failed.");
   });
 }
 
 export async function remoteMkdir(port: number, root: string, rel: string, signal?: AbortSignal): Promise<void> {
   const safe = remoteRelative(rel);
-  if (safe === null || !safe) throw new Error("Pfad ungültig.");
+  if (safe === null || !safe) throw new Error("Invalid path.");
   await withSocket(port, signal, async (socket, queue) => {
     await writeAll(socket, Buffer.from(`MKDIR ${b64(root)} ${b64(safe)}\n`));
-    parseOk(await queue.readLine(), "Ordner anlegen fehlgeschlagen.");
+    parseOk(await queue.readLine(), "Could not create the folder.");
   });
 }
 
 /** Delete one image_set directory. The broker refuses every other name. */
 export async function remoteRemoveSet(port: number, root: string, name: string, signal?: AbortSignal): Promise<void> {
-  if (!isImageSetFolder(name)) throw new Error("Nur Bildordner.");
+  if (!isImageSetFolder(name)) throw new Error("Image folders only.");
   await withSocket(port, signal, async (socket, queue) => {
     await writeAll(socket, Buffer.from(`RMSET ${b64(root)} ${b64(name)}\n`));
     try {
-      parseOk(await queue.readLine(), "Löschen fehlgeschlagen.");
+      parseOk(await queue.readLine(), "Delete failed.");
     } catch (err) {
       const message = err instanceof Error ? err.message : "";
       if (message === "bad") {
-        throw new Error("Bitte die Verbindung trennen und neu aufbauen, dann den Bildordner noch einmal löschen.");
+        throw new Error("Disconnect and connect again, then delete the image folder once more.");
       }
       throw err;
     }
@@ -244,24 +244,24 @@ export async function remoteWalk(port: number, remotePath: string, signal?: Abor
     let total = 0;
     while (true) {
       const line = await queue.readLine();
-      if (line.startsWith("ERR")) throw new Error(line.slice(4).trim() || "Ordner lesen fehlgeschlagen.");
+      if (line.startsWith("ERR")) throw new Error(line.slice(4).trim() || "Could not read the folder.");
       if (line.startsWith("END ")) {
         const [, countRaw, bytesRaw] = line.split(" ");
-        if (files.length !== Number(countRaw) || total !== Number(bytesRaw)) throw new Error("Antwort ungültig.");
+        if (files.length !== Number(countRaw) || total !== Number(bytesRaw)) throw new Error("Invalid reply.");
         return { files, dirs, total };
       }
       if (line.startsWith("DIR ")) {
         const rel = remoteRelative(Buffer.from(line.slice(4).trim(), "base64").toString("utf8"));
-        if (!rel) throw new Error("Pfad ungültig.");
+        if (!rel) throw new Error("Invalid path.");
         dirs.push(rel);
         continue;
       }
       const match = /^FILE (\d+) (\S+)$/.exec(line);
-      if (!match) throw new Error("Antwort ungültig.");
+      if (!match) throw new Error("Invalid reply.");
       const size = Number(match[1]);
       const rel = remoteRelative(Buffer.from(match[2], "base64").toString("utf8"));
-      if (!rel || !Number.isSafeInteger(size) || size < 0) throw new Error("Pfad ungültig.");
-      if (total + size > MAX_TRANSFER_BYTES) throw new Error("Maximal 10 GB.");
+      if (!rel || !Number.isSafeInteger(size) || size < 0) throw new Error("Invalid path.");
+      if (total + size > MAX_TRANSFER_BYTES) throw new Error("Maximum 10 GB.");
       total += size;
       files.push({ rel, size });
     }
@@ -278,11 +278,11 @@ export async function remoteRead(
   return withSocket(port, signal, async (socket, queue) => {
     await writeAll(socket, Buffer.from(`GET ${b64(remotePath)}\n`));
     const line = await queue.readLine();
-    if (line.startsWith("ERR")) throw new Error(line.slice(4).trim() || "Herunterladen fehlgeschlagen.");
+    if (line.startsWith("ERR")) throw new Error(line.slice(4).trim() || "Download failed.");
     const match = /^OK (\d+)$/.exec(line);
-    if (!match) throw new Error("Antwort ungültig.");
+    if (!match) throw new Error("Invalid reply.");
     const size = Number(match[1]);
-    if (!Number.isSafeInteger(size) || size < 0 || size > MAX_TRANSFER_BYTES) throw new Error("Maximal 10 GB.");
+    if (!Number.isSafeInteger(size) || size < 0 || size > MAX_TRANSFER_BYTES) throw new Error("Maximum 10 GB.");
     onSize?.(size);
     let left = size;
     while (left > 0) {
@@ -310,7 +310,7 @@ async function writeFully(handle: fs.promises.FileHandle, chunk: Buffer): Promis
   let off = 0;
   while (off < chunk.length) {
     const { bytesWritten } = await handle.write(chunk, off, chunk.length - off);
-    if (bytesWritten <= 0) throw new Error("Schreiben fehlgeschlagen.");
+    if (bytesWritten <= 0) throw new Error("Write failed.");
     off += bytesWritten;
   }
 }
@@ -332,7 +332,7 @@ export async function saveRemoteTree(opts: {
   onProgress?: (progress: SaveProgress) => void;
 }): Promise<{ files: number; bytes: number; folder: string }> {
   const localStat = await fs.promises.stat(opts.localDir);
-  if (!localStat.isDirectory()) throw new Error("Ziel ist kein Ordner.");
+  if (!localStat.isDirectory()) throw new Error("Target is not a folder.");
   const walked = await remoteWalk(opts.port, opts.remotePath, opts.signal);
   const baseName = remoteBaseName(opts.remotePath);
   let written = 0;
@@ -349,7 +349,7 @@ export async function saveRemoteTree(opts: {
 
   if (!opts.directory) {
     const dest = localDestWith(path, opts.localDir, baseName);
-    if (!dest) throw new Error("Pfad ungültig.");
+    if (!dest) throw new Error("Invalid path.");
     const handle = await openLocal(dest);
     try {
       await remoteRead(
@@ -373,11 +373,11 @@ export async function saveRemoteTree(opts: {
   }
 
   const folder = localDestWith(path, opts.localDir, baseName);
-  if (!folder) throw new Error("Pfad ungültig.");
+  if (!folder) throw new Error("Invalid path.");
   await fs.promises.mkdir(folder, { recursive: true });
   for (const dir of walked.dirs) {
     const dest = localDestWith(path, folder, dir);
-    if (!dest) throw new Error("Pfad ungültig.");
+    if (!dest) throw new Error("Invalid path.");
     await fs.promises.mkdir(dest, { recursive: true });
   }
   let filesDone = 0;
@@ -385,7 +385,7 @@ export async function saveRemoteTree(opts: {
     throwIfAborted(opts.signal);
     const remoteFile = joinRemote(opts.remotePath, file.rel);
     const dest = localDestWith(path, folder, file.rel);
-    if (!remoteFile || !dest) throw new Error("Pfad ungültig.");
+    if (!remoteFile || !dest) throw new Error("Invalid path.");
     const handle = await openLocal(dest);
     try {
       await remoteRead(

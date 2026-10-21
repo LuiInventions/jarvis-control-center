@@ -49,7 +49,7 @@ export async function POST(req: NextRequest) {
   if (typeof body.projectsDir === "string") {
     const dir = body.projectsDir.trim();
     if (dir && !existsSync(dir)) {
-      return Response.json({ error: `Ordner existiert nicht: ${dir}` }, { status: 400 });
+      return Response.json({ error: `Folder does not exist: ${dir}` }, { status: 400 });
     }
     patch.projectsDir = dir;
   }
@@ -60,14 +60,14 @@ export async function POST(req: NextRequest) {
   if (typeof body.launcherLocalPath === "string") {
     const dir = body.launcherLocalPath.trim();
     if (dir && !existsSync(dir)) {
-      return Response.json({ error: `Ordner existiert nicht: ${dir}` }, { status: 400 });
+      return Response.json({ error: `Folder does not exist: ${dir}` }, { status: 400 });
     }
     patch.launcherLocalPath = dir;
   }
   if (typeof body.reaDir === "string") {
     const dir = body.reaDir.trim();
     if (dir && !existsSync(dir)) {
-      return Response.json({ error: `Ordner existiert nicht: ${dir}` }, { status: 400 });
+      return Response.json({ error: `Folder does not exist: ${dir}` }, { status: 400 });
     }
     patch.reaDir = dir;
   }
@@ -75,7 +75,7 @@ export async function POST(req: NextRequest) {
   if (typeof body.codeCli === "string" && body.codeCli.trim()) {
     const id = body.codeCli.trim();
     if (!isCodeCliId(id)) {
-      return Response.json({ error: `Unbekannte Code-CLI: ${id}` }, { status: 400 });
+      return Response.json({ error: `Unknown code CLI: ${id}` }, { status: 400 });
     }
     patch.codeCli = id;
   }
@@ -88,7 +88,7 @@ export async function POST(req: NextRequest) {
     const dir = typeof body.projectsDir === "string" ? body.projectsDir.trim() : "";
     if (!dir || !existsSync(dir)) {
       return Response.json(
-        { error: "Projektordner erforderlich und muss existieren." },
+        { error: "Project folder is required and must exist." },
         { status: 400 },
       );
     }

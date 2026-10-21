@@ -20,7 +20,7 @@ export async function POST(req: NextRequest) {
   try {
     body = (await req.json()) as Record<string, unknown>;
   } catch {
-    return Response.json({ error: "Ungültige Anfrage." }, { status: 400 });
+    return Response.json({ error: "Invalid request." }, { status: 400 });
   }
   // Do not log `body`: it can contain the SSH password and a 2FA code.
   const action = typeof body.action === "string" ? body.action : "";
@@ -49,7 +49,7 @@ export async function POST(req: NextRequest) {
     return Response.json(status);
   }
   if (action !== "begin") {
-    return Response.json({ error: "Unbekannte Aktion." }, { status: 400 });
+    return Response.json({ error: "Unknown action." }, { status: 400 });
   }
 
   const now = remoteStatus();

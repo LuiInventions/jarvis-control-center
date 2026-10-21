@@ -85,16 +85,16 @@ export function parseLoginTarget(
     if (!user && left) user = left;
     host = right;
   }
-  if (!user) return { error: "Benutzer fehlt." };
-  if (!USER_RE.test(user)) return { error: "Benutzer enthält ungültige Zeichen." };
-  if (!host || host.startsWith("-") || /[\s'"]/.test(host)) return { error: "IP ist ungültig." };
+  if (!user) return { error: "User name is missing." };
+  if (!USER_RE.test(user)) return { error: "The user name contains invalid characters." };
+  if (!host || host.startsWith("-") || /[\s'"]/.test(host)) return { error: "Invalid IP." };
   if (/^\d{1,3}(?:\.\d{1,3}){3}$/.test(host)) {
     const ok = host.split(".").every((part) => Number(part) <= 255);
-    if (!ok) return { error: "IP ist ungültig." };
+    if (!ok) return { error: "Invalid IP." };
     return { user, host };
   }
   if (!/^[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/.test(host)) {
-    return { error: "IP ist ungültig." };
+    return { error: "Invalid IP." };
   }
   return { user, host };
 }

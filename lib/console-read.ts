@@ -76,17 +76,17 @@ export function tailText(input: string, maxLines = 40, maxChars = 4000): string 
 }
 
 function statusLabel(status: ConsoleStatus): string {
-  return status === "running" ? "läuft" : status === "done" ? "fertig" : "Fehler";
+  return status === "running" ? "running" : status === "done" ? "done" : "error";
 }
 
 /** One-line-per-console list for Jarvis to read aloud / reason over. */
 export function formatConsoleList(list: ConsoleSummary[]): string {
-  if (list.length === 0) return "Keine laufenden Claude-Code-Konsolen.";
+  if (list.length === 0) return "No running Claude Code consoles.";
   return list
     .map((c) => {
       const task = c.prompt.trim()
         ? c.prompt.trim().replace(/\s+/g, " ").slice(0, 80)
-        : "(ohne Prompt)";
+        : "(no prompt)";
       return `#${c.instance} [${statusLabel(c.status)}] ${c.projectName || "?"} — ${task}`;
     })
     .join("\n");

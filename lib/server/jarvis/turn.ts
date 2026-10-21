@@ -89,7 +89,7 @@ export async function runToolLoop(opts: {
         result = await opts.callTool(call.name, parsed.args);
       } catch (err) {
         result = {
-          text: err instanceof Error ? err.message : "Werkzeug fehlgeschlagen",
+          text: err instanceof Error ? err.message : "Tool failed",
           ok: false,
         };
       }
@@ -113,7 +113,7 @@ export async function runToolLoop(opts: {
     }
   }
   return {
-    text: text || "Ich habe das Werkzeug-Limit erreicht. Sag mir, womit ich weitermachen soll.",
+    text: text || "I reached the tool limit. Tell me what to continue with.",
     tools,
   };
 }

@@ -37,7 +37,7 @@ export async function expandLocalPaths(paths: readonly string[]): Promise<LocalI
     body: JSON.stringify({ paths }),
   });
   const data = (await response.json()) as { items?: ExpandedItem[]; error?: string };
-  if (!response.ok || !data.items) throw new Error(data.error || "Ordner konnte nicht gelesen werden.");
+  if (!response.ok || !data.items) throw new Error(data.error || "Could not read the folder.");
   return data.items.map((item) => ({
     rel: item.rel,
     size: item.size,
@@ -120,7 +120,7 @@ function postOne(
           resolve();
           return;
         }
-        let message = "Hochladen fehlgeschlagen.";
+        let message = "Upload failed.";
         try {
           const parsed = JSON.parse(xhr.responseText) as { error?: string };
           if (parsed.error) message = parsed.error;
@@ -130,7 +130,7 @@ function postOne(
         reject(new Error(message));
       });
     };
-    xhr.onerror = () => finish(() => reject(new Error("Hochladen fehlgeschlagen.")));
+    xhr.onerror = () => finish(() => reject(new Error("Upload failed.")));
     xhr.onabort = () => finish(() => reject(new Error("Abgebrochen.")));
     xhr.send(body);
   });
@@ -160,7 +160,7 @@ async function mkdirAll(kind: UploadKind, dir: string, dirs: readonly string[], 
 function failureMessage(error: unknown): string {
   if (typeof error === "string" && error.trim()) return error;
   if (error instanceof Error && error.message) return error.message;
-  return "Hochladen fehlgeschlagen.";
+  return "Upload failed.";
 }
 
 async function uploadFilesWithUppy(
@@ -199,7 +199,7 @@ async function uploadFilesWithUppy(
     getResponseData: () => ({ url: "" }),
     onAfterResponse: (xhr) => {
       if (xhr.status >= 200 && xhr.status < 300) return;
-      let message = "Hochladen fehlgeschlagen.";
+      let message = "Upload failed.";
       try {
         const parsed = JSON.parse(xhr.responseText) as { error?: string };
         if (parsed.error) message = parsed.error;
@@ -235,7 +235,7 @@ async function uploadFilesWithUppy(
     uppy.addFiles(
       planned.map((item) => {
         const body = files.get(item.rel);
-        if (!body) throw new Error("Datei fehlt.");
+        if (!body) throw new Error("File is missing.");
         return {
           name: item.rel.split("/").pop() || item.rel,
           type: body.type || "application/octet-stream",
@@ -278,7 +278,7 @@ async function uploadFromSources(options: {
     signal: options.signal,
   });
   if (!response.ok) {
-    let message = "Hochladen fehlgeschlagen.";
+    let message = "Upload failed.";
     try {
       const parsed = (await response.json()) as { error?: string };
       if (parsed.error) message = parsed.error;
@@ -287,7 +287,7 @@ async function uploadFromSources(options: {
     }
     throw new Error(message);
   }
-  if (!response.body) throw new Error("Hochladen fehlgeschlagen.");
+  if (!response.body) throw new Error("Upload failed.");
   const reader = response.body.getReader();
   const decoder = new TextDecoder();
   let buf = "";
@@ -305,7 +305,7 @@ async function uploadFromSources(options: {
       dirs?: number;
     };
     if (msg.type === "progress") options.onProgress(msg.written ?? 0, msg.total ?? 0, msg.current ?? "");
-    else if (msg.type === "error") throw new Error(msg.error || "Hochladen fehlgeschlagen.");
+    else if (msg.type === "error") throw new Error(msg.error || "Upload failed.");
     else if (msg.type === "done") doneInfo = { files: msg.files ?? 0, bytes: msg.bytes ?? 0, dirs: msg.dirs ?? 0 };
   };
   while (true) {
@@ -320,7 +320,7 @@ async function uploadFromSources(options: {
     }
   }
   takeLine(buf.trim());
-  if (!doneInfo) throw new Error("Hochladen fehlgeschlagen.");
+  if (!doneInfo) throw new Error("Upload failed.");
   return doneInfo;
 }
 

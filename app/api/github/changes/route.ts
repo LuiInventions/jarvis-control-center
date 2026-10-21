@@ -17,10 +17,10 @@ export async function POST(req: NextRequest) {
     return Response.json({ error: "invalid json" }, { status: 400 });
   }
   const fullName = (body.fullName ?? "").trim();
-  if (!fullName) return Response.json({ error: "fullName fehlt." }, { status: 400 });
+  if (!fullName) return Response.json({ error: "fullName is missing." }, { status: 400 });
 
   const localPath = findRepoPath(readGithubState().repos, fullName);
-  if (!localPath) return Response.json({ error: "Repo nicht gefunden." }, { status: 400 });
+  if (!localPath) return Response.json({ error: "Repo not found." }, { status: 400 });
 
   const { branch, files } = await gitPushPreview(localPath);
   return Response.json({ ok: true, branch, files });

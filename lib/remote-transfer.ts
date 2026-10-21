@@ -83,7 +83,7 @@ export function planTransfer(entries: readonly TransferEntry[]): { ok: true; pla
   let total = 0;
   for (const entry of entries) {
     const rel = remoteRelative(entry.rel);
-    if (rel === null) return { ok: false, error: "Dateiname ungültig." };
+    if (rel === null) return { ok: false, error: "Invalid file name." };
     if (entry.dir) {
       if (rel) {
         addParents(rel, dirs);
@@ -91,17 +91,17 @@ export function planTransfer(entries: readonly TransferEntry[]): { ok: true; pla
       }
       continue;
     }
-    if (!rel) return { ok: false, error: "Dateiname ungültig." };
-    if (!Number.isFinite(entry.size) || entry.size < 0) return { ok: false, error: "Dateigrösse ungültig." };
+    if (!rel) return { ok: false, error: "Invalid file name." };
+    if (!Number.isFinite(entry.size) || entry.size < 0) return { ok: false, error: "Invalid file size." };
     const prev = files.get(rel);
     if (prev !== undefined) total -= prev;
-    if (total + entry.size > MAX_TRANSFER_BYTES) return { ok: false, error: "Maximal 10 GB." };
+    if (total + entry.size > MAX_TRANSFER_BYTES) return { ok: false, error: "At most 10 GB." };
     files.set(rel, entry.size);
     total += entry.size;
     // A dropped folder arrives as files with a relative path, not as directory entries.
     addParents(rel, dirs);
   }
-  if (files.size === 0 && dirs.size === 0) return { ok: false, error: "Nichts zum Hochladen." };
+  if (files.size === 0 && dirs.size === 0) return { ok: false, error: "Nothing to upload." };
   return {
     ok: true,
     plan: {
@@ -113,8 +113,8 @@ export function planTransfer(entries: readonly TransferEntry[]): { ok: true; pla
 }
 
 export function transferSummary(files: number, bytes: number, dirs = 0): string {
-  if (files === 0 && dirs > 0) return dirs === 1 ? "1 Ordner" : `${dirs} Ordner`;
-  const count = files === 1 ? "1 Datei" : `${files} Dateien`;
+  if (files === 0 && dirs > 0) return dirs === 1 ? "1 folder" : `${dirs} folders`;
+  const count = files === 1 ? "1 file" : `${files} files`;
   return `${count} · ${formatBytes(bytes)}`;
 }
 

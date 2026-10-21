@@ -23,20 +23,20 @@ describe("buildReviewContext", () => {
     ]);
     // sorted by number regardless of input order
     expect(ctx.indexOf("#1 · one")).toBeLessThan(ctx.indexOf("#2 · two"));
-    expect(ctx).toContain("[läuft]");
-    expect(ctx).toContain("Auftrag: add dark mode");
+    expect(ctx).toContain("[running]");
+    expect(ctx).toContain("Task: add dark mode");
     expect(ctx).toContain("done one");
     expect(ctx).toContain("done two");
   });
 
   it("handles empty prompt and empty output with placeholders", () => {
     const ctx = buildReviewContext([item({ prompt: "  ", output: "" })]);
-    expect(ctx).toContain("(ohne Prompt / interaktiv)");
-    expect(ctx).toContain("(keine Ausgabe)");
+    expect(ctx).toContain("(no prompt / interactive)");
+    expect(ctx).toContain("(no output)");
   });
 
   it("returns a marker for an empty list", () => {
-    expect(buildReviewContext([])).toBe("(keine Sessions)");
+    expect(buildReviewContext([])).toBe("(no sessions)");
   });
 });
 

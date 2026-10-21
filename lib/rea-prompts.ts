@@ -1,8 +1,14 @@
 /** Prompt that installs REA into the folder of the CLI session. */
-export const REA_SETUP_PROMPT = `hallo installiere dieses github: "https://github.com/morluto/rea" schaue es dir erst an und installiere dieses repo mit allen agents, skills etc in die aktuelle folder. erschaffe so ein team, welches mich ausgewählte apps features reverse engineeren lässt. schaue zuerst, ob der mcp server oder das plugin schon installiert ist. installiere in die aktuelle folder wie gesagt alles rein, was noch fehlt.
-gehe sicher das am ende alle diese features für eine cli session in dem aktuellen ordner verfügbar sind: " - REA MCP server (npx rea-agents setup)
+export const REA_SETUP_PROMPT = `Look at this GitHub repository first: "https://github.com/morluto/rea". Install that repository, including all agents, skills, and the rest of the project, into the current folder. Build a team that lets me reverse engineer selected features of apps I choose.
+
+Check first whether the MCP server or the plugin is already installed. Install into the current folder only what is still missing. Do not assume it is already installed.
+
+Make sure all of these features are available to a CLI session in the current folder when you are done:
+- REA MCP server (npx rea-agents setup)
 - Native analysis via Hopper, Ghidra or IDA
-- Static inspection of JavaScript/Electron apps and .NET assemblies". verbinde den mcp server dann mit der aktuell ausgewählten cli session, falls er noch nicht verbunden ist.`;
+- Static inspection of JavaScript/Electron apps and .NET assemblies
+
+Then connect the MCP server to the currently selected CLI session if it is not already connected.`;
 
 /** One feature. `{program name}` and `{name}` are filled. `[feature]` stays for the user. */
 export const FEATURE_PROMPT = `<prompt>

@@ -276,7 +276,7 @@ async function scanDesktopApps(): Promise<DesktopApp[]> {
   try {
     await runPowerShell(LIST_SCRIPT, ["-OutFile", outFile], 120_000);
   } catch (err) {
-    throw new Error(`Programme konnten nicht gelesen werden: ${(err as Error).message}`);
+    throw new Error(`Programs could not be read: ${(err as Error).message}`);
   }
   let text = "";
   try {
